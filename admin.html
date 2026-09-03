@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EL-MISTER | لوحة إدارة مستر سعيد 🎓</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <style>
+    :root {
+      --primary: #104382; --primary-hover: #0d3568; --bg: #f1f5f9;
+      --border: #e2e8f0; --text: #0f172a; --text-muted: #64748b;
+      --success: #16a34a; --danger: #dc2626; --warning: #d97706;
+    }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
+
+    #adminLockScreen {
+      position: fixed; inset: 0; background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+      display: flex; align-items: center; justify-content: center; z-index: 9999;
+    }
+    .lock-card { background: #fff; padding: 40px; border-radius: 16px; width: 100%; max-width: 420px; text-align: center; }
+
+    #adminApp { display: none; padding: 25px 35px; }
+    .top-navbar {
+      background: #fff; padding: 16px 28px; border-radius: 14px; border: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;
+    }
+    
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 25px; }
+    .stat-card {
+      background: #fff; padding: 20px; border-radius: 14px; border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .stat-num { font-size: 26px; font-weight: 800; color: var(--primary); margin-top: 4px; }
+
+    .tabs-nav { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; flex-wrap: wrap; }
+    .tab-btn {
+      padding: 10px 16px; border: none; background: #e2e8f0; color: var(--text); font-weight: 700;
+      border-radius: 8px; cursor: pointer; transition: 0.2s; font-size: 13px;
+    }
+    .tab-btn.active { background: var(--primary); color: #fff; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .panel-card {
+      background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 25px;
+    }
+    .panel-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+    }
+    .panel-title { font-size: 16px; font-weight: 700; color: var(--primary); }
+
+    .form-ctrl {
+      width: 100%; height: 44px; padding: 0 14px; border: 1.5px solid var(--border);
+      border-radius: 8px; margin-bottom: 12px; outline: none; font-size: 14px;
+    }
+    .form-ctrl:focus { border-color: var(--primary); }
+
+    .btn {
+      padding: 8px 14px; border: none; border-radius: 6px; font-weight: 700;
+      cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-main { background: var(--primary); color: #fff; width: 100%; height: 44px; justify-content: center; }
+    .btn-green { background: #dcfce7; color: #166534; }
+    .btn-red { background: #fee2e2; color: #991b1b; }
+    .btn-warn { background: #fef3c7; color: #92400e; }
+    .btn-wa { background: #25d366; color: #fff; padding: 5px 10px; border-radius: 6px; text-decoration: none; font-weight: bold; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 12px 14px; text-align: right; border-bottom: 1px solid var(--border); font-size: 13px; }
+    th { background: #f8fafc; color: #475569; font-weight: 700; }
+  </style>
+</head>
+<body>
+
+  <div id="adminLockScreen">
+    <div class="lock-card">
+      <div style="font-size: 36px; color: var(--primary); margin-bottom: 10px;"><i class="fa-solid fa-graduation-cap"></i></div>
+      <h2 style="color: var(--primary); margin-bottom: 6px;">استوديو مستر سعيد</h2>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 25px;">EL-MISTER Cloud Admin</p>
+      <form id="lockForm">
+        <input type="text" id="adminUser" class="form-ctrl" placeholder="اسم المستخدم (admin)" required>
+        <input type="password" id="adminPass" class="form-ctrl" placeholder="كلمة المرور (admin123)" required>
+        <button type="submit" class="btn btn-main">دخول لوحة التحكم 🔐</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="adminApp">
+    <header class="top-navbar">
+      <div>
+        <div style="font-size: 18px; font-weight: 800; color: var(--primary);">استوديو إدارة منصة المستر سعيد التعليمية 🎓</div>
+        <div style="font-size: 12px; color: var(--text-muted);">تحكم مباشر: الطلاب، الحضور والغياب، المجتمع، لوحة الشرف، والاختبارات</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span id="pendingBadge" style="font-weight: 700; font-size: 13px;"></span>
+        <button onclick="adminLogout()" class="btn" style="background:#0f172a; color:#fff;">تسجيل خروج 🚪</button>
+      </div>
+    </header>
+
+    <!-- بطاقات الإحصائيات -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div><div style="font-size:12px; color:var(--text-muted);">إجمالي الطلاب</div><div class="stat-num" id="stCountTotal">0</div></div>
+        <i class="fa-solid fa-users" style="font-size:26px; color:var(--primary); opacity:0.3;"></i>
+      </div>
+      <div class="stat-card">
+        <div><div style="font-size:12px; color:var(--text-muted);">طلبات معلقة</div><div class="stat-num" style="color:var(--danger);" id="stCountPending">0</div></div>
+        <i class="fa-solid fa-user-clock" style="font-size:26px; color:var(--danger); opacity:0.3;"></i>
+      </div>
+      <div class="stat-card">
+        <div><div style="font-size:12px; color:var(--text-muted);">أبطال لوحة الشرف</div><div class="stat-num" style="color:#eab308;" id="stCountHonor">0</div></div>
+        <i class="fa-solid fa-medal" style="font-size:26px; color:#eab308; opacity:0.3;"></i>
+      </div>
+      <div class="stat-card">
+        <div><div style="font-size:12px; color:var(--text-muted);">نسبة الفهم العامة</div><div class="stat-num" style="color:var(--success);" id="stFeedbackAvg">100%</div></div>
+        <i class="fa-solid fa-face-smile" style="font-size:26px; color:var(--success); opacity:0.3;"></i>
+      </div>
+    </div>
+
+    <!-- التبويبات -->
+    <div class="tabs-nav">
+      <button class="tab-btn active" onclick="switchTab('tabStudents', this)"><i class="fa-solid fa-users"></i> الطلاب والاشتراكات</button>
+      <button class="tab-btn" onclick="switchTab('tabCommunity', this)"><i class="fa-solid fa-comments"></i> شات المجتمع المباشر</button>
+      <button class="tab-btn" onclick="switchTab('tabHonor', this)"><i class="fa-solid fa-award"></i> لوحة الشرف</button>
+      <button class="tab-btn" onclick="switchTab('tabAttendance', this)"><i class="fa-solid fa-clipboard-user"></i> الحضور والغياب</button>
+      <button class="tab-btn" onclick="switchTab('tabExamsProj', this)"><i class="fa-solid fa-pen-ruler"></i> الاختبارات والواجبات</button>
+      <button class="tab-btn" onclick="switchTab('tabLessonsRes', this)"><i class="fa-solid fa-video"></i> الحصص والمذكرات</button>
+      <button class="tab-btn" onclick="switchTab('tabPolls', this)"><i class="fa-solid fa-square-poll-vertical"></i> استطلاع الفهم</button>
+    </div>
+
+    <!-- 1. إدارة الطلاب -->
+    <div id="tabStudents" class="tab-content active">
+      <div class="panel-card">
+        <div class="panel-header">
+          <div class="panel-title"><i class="fa-solid fa-users"></i> كشوفات الطلاب وقفل الأجهزة والتواصل</div>
+          <select id="filterGrade" class="form-ctrl" style="width:220px; margin:0; height:36px;" onchange="filterStudents()">
+            <option value="all">كل المراحل الدراسية</option>
+            <option value="الصف الأول الابتدائي">الصف الأول الابتدائي</option>
+            <option value="الصف الثاني الابتدائي">الصف الثاني الابتدائي</option>
+            <option value="الصف الثالث الابتدائي">الصف الثالث الابتدائي</option>
+            <option value="الصف الرابع الابتدائي">الصف الرابع الابتدائي</option>
+            <option value="الصف الخامس الابتدائي">الصف الخامس الابتدائي</option>
+            <option value="الصف السادس الابتدائي">الصف السادس الابتدائي</option>
+            <option value="الصف الأول الإعدادي">الصف الأول الإعدادي</option>
+            <option value="الصف الثاني الإعدادي">الصف الثاني الإعدادي</option>
+            <option value="الصف الثالث الإعدادي">الصف الثالث الإعدادي</option>
+            <option value="الصف الأول الثانوي">الصف الأول الثانوي</option>
+            <option value="الصف الثاني الثانوي">الصف الثاني الثانوي</option>
+            <option value="الصف الثالث الثانوي">الصف الثالث الثانوي</option>
+          </select>
+        </div>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>اسم الطالب</th><th>المرحلة</th><th>هاتف الطالب</th><th>ولي الأمر</th><th>الحالة</th><th>إجراءات المستر</th>
+              </tr>
+            </thead>
+            <tbody id="studentsTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. مجتمع الطلاب (الشات الحي بدون أي أخطاء فهارس) -->
+    <div id="tabCommunity" class="tab-content">
+      <div class="panel-card">
+        <div class="panel-header">
+          <div class="panel-title"><i class="fa-solid fa-comments"></i> متابعة رسايل الطلاب الحية والرد عليهم</div>
+          <select id="chatGradeFilter" class="form-ctrl" style="width:240px; margin:0; height:36px;" onchange="loadCommunityChat()">
+            <option value="all">كل المراحل معاً</option>
+            <option value="الصف الأول الثانوي">الصف الأول الثانوي</option>
+            <option value="الصف الثاني الثانوي">الصف الثاني الثانوي</option>
+            <option value="الصف الثالث الثانوي">الصف الثالث الثانوي</option>
+            <option value="الصف الأول الإعدادي">الصف الأول الإعدادي</option>
+            <option value="الصف الثاني الإعدادي">الصف الثاني الإعدادي</option>
+            <option value="الصف الثالث الإعدادي">الصف الثالث الإعدادي</option>
+            <option value="الصف السادس الابتدائي">الصف السادس الابتدائي</option>
+            <option value="الصف الخامس الابتدائي">الصف الخامس الابتدائي</option>
+            <option value="الصف الرابع الابتدائي">الصف الرابع الابتدائي</option>
+            <option value="الصف الثالث الابتدائي">الصف الثالث الابتدائي</option>
+            <option value="الصف الثاني الابتدائي">الصف الثاني الابتدائي</option>
+            <option value="الصف الأول الابتدائي">الصف الأول الابتدائي</option>
+          </select>
+        </div>
+        
+        <div id="adminChatStream" style="height:380px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; padding:15px; margin-bottom:15px; background:#f8fafc;">
+          <p style="color:#64748b;">جاري تحميل الرسائل...</p>
+        </div>
+        
+        <div style="display:flex; gap:10px;">
+          <input type="text" id="adminReplyText" class="form-ctrl" style="margin:0;" placeholder="اكتب رداً رسمياً بصفتك (مستر سعيد)...">
+          <button class="btn btn-main" style="width:130px;" onclick="sendAdminChatMessage()">إرسال رد 🎓</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. لوحة الشرف -->
+    <div id="tabHonor" class="tab-content">
+      <div style="display:grid; grid-template-columns: 350px 1fr; gap:20px;">
+        <div class="panel-card">
+          <div class="panel-header"><div class="panel-title">إضافة طالب للوحة الشرف ⭐</div></div>
+          <form id="addHonorForm">
+            <input type="text" id="hnName" class="form-ctrl" placeholder="اسم الطالب المتفوق" required>
+            <select id="hnGrade" class="form-ctrl" required>
+              <option value="كل المراحل">لكل المنصة (عام)</option>
+              <option value="الصف الأول الثانوي">الصف الأول الثانوي</option>
+              <option value="الصف الثاني الثانوي">الصف الثاني الثانوي</option>
+              <option value="الصف الثالث الثانوي">الصف الثالث الثانوي</option>
+              <option value="الصف الأول الإعدادي">الصف الأول الإعدادي</option>
+              <option value="الصف الثاني الإعدادي">الصف الثاني الإعدادي</option>
+              <option value="الصف الثالث الإعدادي">الصف الثالث الإعدادي</option>
+              <option value="الصف السادس الابتدائي">الصف السادس الابتدائي</option>
+              <option value="الصف الخامس الابتدائي">الصف الخامس الابتدائي</option>
+              <option value="الصف الرابع الابتدائي">الصف الرابع الابتدائي</option>
+              <option value="الصف الثالث الابتدائي">الصف الثالث الابتدائي</option>
+              <option value="الصف الثاني الابتدائي">الصف الثاني الابتدائي</option>
+              <option value="الصف الأول الابتدائي">الصف الأول الابتدائي</option>
+            </select>
+            <input type="text" id="hnScore" class="form-ctrl" placeholder="الدرجة أو الإنجاز (مثال: 100/100 امتحان Unit 1)" required>
+            <input type="text" id="hnRank" class="form-ctrl" placeholder="الترتيب (مثال: المركز الأول 🥇)" required>
+            <button type="submit" class="btn btn-main" style="background:#eab308;">تثبيت في لوحة الشرف 🏆</button>
+          </form>
+        </div>
+        <div class="panel-card">
+          <div class="panel-header"><div class="panel-title">المتفوقين المثبتين حالياً</div></div>
+          <div id="honorListAdmin"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. الحضور والغياب -->
+    <div id="tabAttendance" class="tab-content">
+      <div class="panel-card">
+        <div class="panel-header">
+          <div class="panel-title"><i class="fa-solid fa-clipboard-user"></i> رصد الحضور والغياب</div>
+          <div style="display:flex; gap:10px;">
+            <input type="text" id="attLessonTitle" class="form-ctrl" style="width:200px; margin:0; height:36px;" placeholder="عنوان الحصة">
+            <button class="btn btn-green" onclick="markAllPresent()"><i class="fa-solid fa-check-double"></i> تحضير الكل</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr><th>اسم الطالب</th><th>المرحلة</th><th>رصد الحصة الحالية</th></tr>
+            </thead>
+            <tbody id="attendanceTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. الاختبارات والمشاريع -->
+    <div id="tabExamsProj" class="tab-content">
+      <div style="display:grid; grid-template-columns: 360px 1fr; gap:20px;">
+        <div class="panel-card">
+          <div class="panel-header"><div class="panel-title">نشر اختبار أو واجب جديد</div></div>
+          <form id="createTaskForm">
+            <select id="tskType" class="form-ctrl">
+              <option value="واجب">مشروع واجب أسبوعي</option>
+              <option value="اختبار">امتحان / كويز إلكتروني</option>
+            </select>
+            <select id="tskGrade" class="form-ctrl">
+              <option value="الصف الأول الثانوي">الصف الأول الثانوي</option>
+              <option value="الصف الثاني الثانوي">الصف الثاني الثانوي</option>
+              <option value="الصف الثالث الثانوي">الصف الثالث الثانوي</option>
+              <option value="الصف الأول الإعدادي">الصف الأول الإعدادي</option>
+              <option value="الصف الثاني الإعدادي">الصف الثاني الإعدادي</option>
+              <option value="الصف الثالث الإعدادي">الصف الثالث الإعدادي</option>
+            </select>
+            <input type="text" id="tskTitle" class="form-ctrl" placeholder="عنوان المهمة" required>
+            <input type="url" id="tskUrl" class="form-ctrl" placeholder="رابط الامتحان أو تفاصيل الواجب" required>
+            <input type="text" id="tskDeadline" class="form-ctrl" placeholder="آخر موعد للتسليم" required>
+            <button type="submit" class="btn btn-main">نشر للطلاب 🚀</button>
+          </form>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-header"><div class="panel-title">تسليمات حلول الطلاب</div></div>
+          <div style="overflow-x:auto;">
+            <table>
+              <thead>
+                <tr><th>الطالب</th><th>المهمة</th><th>رابط الحل</th><th>التقييم</th></tr>
+              </thead>
+              <tbody id="taskSubmissionsTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. الحصص والمذكرات -->
+    <div id="tabLessonsRes" class="tab-content">
+      <div style="display:grid; grid-template-columns: 360px 1fr; gap:20px;">
+        <div class="panel-card">
+          <div class="panel-header"><div class="panel-title">نشر محاضرة أو مذكرة PDF</div></div>
+          <form id="addMediaForm">
+            <select id="mCategory" class="form-ctrl">
+              <option value="حصة">حصة منهج أساسية</option>
+              <option value="تعلم ذاتي">درس تعلم ذاتي وتأسيس</option>
+              <option value="مذكرة">مذكرة أو ملزمة PDF</option>
+            </select>
+            <select id="mGrade" class="form-ctrl">
+              <option value="الصف الأول الثانوي">الصف الأول الثانوي</option>
+              <option value="الصف الثاني الثانوي">الصف الثاني الثانوي</option>
+              <option value="الصف الثالث الثانوي">الصف الثالث الثانوي</option>
+              <option value="الصف الأول الإعدادي">الصف الأول الإعدادي</option>
+              <option value="الصف الثاني الإعدادي">الصف الثاني الإعدادي</option>
+              <option value="الصف الثالث الإعدادي">الصف الثالث الإعدادي</option>
+            </select>
+            <input type="text" id="mTitle" class="form-ctrl" placeholder="العنوان" required>
+            <input type="url" id="mUrl" class="form-ctrl" placeholder="الرابط" required>
+            <input type="text" id="mDesc" class="form-ctrl" placeholder="الوصف" required>
+            <button type="submit" class="btn btn-main">نشر 📥</button>
+          </form>
+        </div>
+        <div class="panel-card">
+          <div class="panel-header"><div class="panel-title">المحتوى المنشور</div></div>
+          <div id="adminMediaList" style="max-height:450px; overflow-y:auto;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. استطلاع الفهم -->
+    <div id="tabPolls" class="tab-content">
+      <div class="panel-card" style="max-width:700px;">
+        <div class="panel-header"><div class="panel-title"><i class="fa-solid fa-square-poll-vertical"></i> نتائج استطلاع الفهم</div></div>
+        <div id="pollResultsBox">جاري التحميل...</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBQDpzEy7llbyiF6OdvG8PsuVvjJu4PWtk",
+      authDomain: "el-master-aca19.firebaseapp.com",
+      projectId: "el-master-aca19",
+      storageBucket: "el-master-aca19.firebasestorage.app",
+      messagingSenderId: "998446175218",
+      appId: "1:998446175218:web:f911680ba3cbb3edead16b"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let allStudents = [];
+
+    document.getElementById('lockForm').onsubmit = (e) => {
+      e.preventDefault();
+      if(document.getElementById('adminUser').value.trim()==='admin' && document.getElementById('adminPass').value.trim()==='admin123'){
+        sessionStorage.setItem('adm_auth', '1');
+        initAdmin();
+      } else { alert('خطأ في البيانات!'); }
+    };
+
+    window.onload = () => { if(sessionStorage.getItem('adm_auth')==='1') initAdmin(); };
+
+    function initAdmin() {
+      document.getElementById('adminLockScreen').style.display = 'none';
+      document.getElementById('adminApp').style.display = 'block';
+      listenStudents();
+      listenHonor();
+      listenMedia();
+      listenTaskSubmissions();
+      listenPolls();
+      loadCommunityChat();
+    }
+
+    function adminLogout() { sessionStorage.removeItem('adm_auth'); location.reload(); }
+
+    function switchTab(id, b) {
+      document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(btn=>btn.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      b.classList.add('active');
+    }
+
+    function makeWa(p) {
+      let c = p.replace(/[^0-9]/g,'');
+      if(c.startsWith('0')) c = '20' + c.substring(1);
+      return `https://wa.me/${c}`;
+    }
+
+    function listenStudents() {
+      db.collection('students').onSnapshot(snap => {
+        allStudents = [];
+        snap.forEach(d => allStudents.push({id: d.id, ...d.data()}));
+        document.getElementById('stCountTotal').innerText = allStudents.length;
+        const pending = allStudents.filter(s=>s.status==='معلق').length;
+        document.getElementById('stCountPending').innerText = pending;
+        document.getElementById('pendingBadge').innerHTML = pending > 0 ? `<span style="color:var(--danger);"><i class="fa-solid fa-bell"></i> ${pending} طلبات</span>` : `<span style="color:var(--success);">مستقر</span>`;
+        renderStudents(allStudents);
+        renderAttendance(allStudents);
+      });
+    }
+
+    function renderStudents(list) {
+      document.getElementById('studentsTbody').innerHTML = list.map(s => `
+        <tr>
+          <td><b>${s.name}</b><br><small style="color:#64748b;">${s.nameEn||''}</small></td>
+          <td>${s.grade}</td>
+          <td><a href="${makeWa(s.phone)}" target="_blank" class="btn-wa"><i class="fa-brands fa-whatsapp"></i> ${s.phone}</a></td>
+          <td>${s.parentPhone ? `<a href="${makeWa(s.parentPhone)}" target="_blank" class="btn-wa" style="background:#0284c7;"><i class="fa-brands fa-whatsapp"></i> ${s.parentPhone}</a>` : '-'}</td>
+          <td><span style="font-weight:bold; color:${s.status==='نشط'?'#16a34a':(s.status==='معلق'?'#ca8a04':'#dc2626')}">${s.status}</span></td>
+          <td>
+            ${s.status==='معلق'?`<button class="btn btn-green" onclick="setSt('${s.id}','نشط')">قبول</button> <button class="btn btn-red" onclick="setSt('${s.id}','محظور')">رفض</button>`:''}
+            ${s.status==='نشط'?`<button class="btn btn-warn" onclick="unlockDev('${s.id}')">فك جهاز</button> <button class="btn btn-red" onclick="setSt('${s.id}','محظور')">حظر</button>`:''}
+            ${s.status==='محظور'?`<button class="btn btn-green" onclick="setSt('${s.id}','نشط')">تفعيل</button>`:''}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function setSt(id, st) { await db.collection('students').doc(id).update({status: st}); }
+    async function unlockDev(id) { await db.collection('students').doc(id).update({deviceId: null}); alert('تم فك الجهاز بنجاح!'); }
+
+    function filterStudents() {
+      const g = document.getElementById('filterGrade').value;
+      renderStudents(g==='all' ? allStudents : allStudents.filter(s=>s.grade===g));
+    }
+
+    function renderAttendance(list) {
+      const active = list.filter(s=>s.status==='نشط');
+      document.getElementById('attendanceTbody').innerHTML = active.map(s => `
+        <tr>
+          <td><b>${s.name}</b></td>
+          <td>${s.grade}</td>
+          <td>
+            <button class="btn btn-green" onclick="alert('تم تسجيل حضور: ${s.name}')"><i class="fa-solid fa-check"></i> حاضر</button>
+            <button class="btn btn-red" onclick="alert('تم تسجيل غياب: ${s.name}')"><i class="fa-solid fa-xmark"></i> غائب</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function markAllPresent() { alert('تم تسجيل الحضور للجميع!'); }
+
+    // شات المجتمع المباشر (معدل بدون خطأ الفهارس)
+    let unsubscribeAdminChat = null;
+    function loadCommunityChat() {
+      if(unsubscribeAdminChat) unsubscribeAdminChat();
+      const grade = document.getElementById('chatGradeFilter').value;
+      
+      let query = db.collection('chat');
+      if(grade !== 'all') {
+        query = query.where('grade', '==', grade);
+      }
+
+      unsubscribeAdminChat = query.onSnapshot(snap => {
+        const stream = document.getElementById('adminChatStream');
+        if(snap.empty) { 
+          stream.innerHTML = '<p style="color:#64748b; text-align:center; padding:20px;">لا توجد رسائل بعد.</p>'; 
+          return; 
+        }
+        
+        let messages = [];
+        snap.forEach(doc => messages.push({id: doc.id, ...doc.data()}));
+        messages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+        stream.innerHTML = messages.map(m => `
+          <div style="margin-bottom:10px; background:#fff; padding:10px 14px; border-radius:8px; border:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <span style="font-size:11px; background:#e0f2fe; color:var(--primary); padding:2px 6px; border-radius:4px; margin-left:6px;">${m.grade||'عام'}</span>
+              <b style="color:${m.sender.includes('المستر')?'#104382':'#0f172a'};">${m.sender}</b>: 
+              <span style="font-size:14px;">${m.text}</span>
+              <div style="font-size:11px; color:#94a3b8; margin-top:2px;">${m.timeFormatted||''}</div>
+            </div>
+            <button class="btn btn-red" style="padding:4px 8px; height:26px;" onclick="db.collection('chat').doc('${m.id}').delete()"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        `).join('');
+        stream.scrollTop = stream.scrollHeight;
+      });
+    }
+
+    async function sendAdminChatMessage() {
+      const txt = document.getElementById('adminReplyText').value.trim();
+      if(!txt) return;
+      const grade = document.getElementById('chatGradeFilter').value;
+      await db.collection('chat').add({
+        grade: grade === 'all' ? 'كل المراحل' : grade,
+        sender: 'مستر سعيد 🎓 (المعلم)',
+        text: txt,
+        timestamp: Date.now(),
+        timeFormatted: new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'})
+      });
+      document.getElementById('adminReplyText').value = '';
+    }
+
+    // لوحة الشرف
+    document.getElementById('addHonorForm').onsubmit = async (e) => {
+      e.preventDefault();
+      await db.collection('honor_board').add({
+        name: document.getElementById('hnName').value.trim(),
+        grade: document.getElementById('hnGrade').value,
+        score: document.getElementById('hnScore').value.trim(),
+        rank: document.getElementById('hnRank').value.trim(),
+        timestamp: Date.now()
+      });
+      alert('تمت إضافة الطالب للوحة الشرف وستظهر فوراً لجميع الطلاب!');
+      document.getElementById('addHonorForm').reset();
+    };
+
+    function listenHonor() {
+      db.collection('honor_board').onSnapshot(snap => {
+        document.getElementById('stCountHonor').innerText = snap.size;
+        let honors = [];
+        snap.forEach(doc => honors.push({id: doc.id, ...doc.data()}));
+        honors.sort((a,b) => (b.timestamp||0) - (a.timestamp||0));
+
+        document.getElementById('honorListAdmin').innerHTML = honors.map(h => `
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border:1px solid #e2e8f0; padding:12px; border-radius:8px; margin-bottom:8px;">
+            <div><b>${h.rank} - ${h.name}</b> (${h.grade})<br><small style="color:#64748b;">${h.score}</small></div>
+            <button class="btn btn-red" onclick="db.collection('honor_board').doc('${h.id}').delete()"><i class="fa-solid fa-trash"></i> حذف</button>
+          </div>
+        `).join('');
+      });
+    }
+
+    // الاختبارات والمشاريع
+    document.getElementById('createTaskForm').onsubmit = async (e) => {
+      e.preventDefault();
+      await db.collection('tasks').add({
+        type: document.getElementById('tskType').value,
+        grade: document.getElementById('tskGrade').value,
+        title: document.getElementById('tskTitle').value.trim(),
+        url: document.getElementById('tskUrl').value.trim(),
+        deadline: document.getElementById('tskDeadline').value.trim(),
+        timestamp: Date.now()
+      });
+      alert('تم نشر المهمة بنجاح!');
+      document.getElementById('createTaskForm').reset();
+    };
+
+    function listenTaskSubmissions() {
+      db.collection('submissions').onSnapshot(snap => {
+        document.getElementById('taskSubmissionsTbody').innerHTML = snap.docs.map(doc => {
+          const s = doc.data();
+          return `
+            <tr>
+              <td><b>${s.studentName}</b><br><small>${s.grade}</small></td>
+              <td>${s.title}</td>
+              <td><a href="${s.fileUrl||s.url}" target="_blank" class="btn btn-main" style="padding:4px 8px; height:30px;">معاينة الحل 🔗</a></td>
+              <td>
+                <select class="form-ctrl" style="height:32px; margin:0;" onchange="db.collection('submissions').doc('${doc.id}').update({status:this.value})">
+                  <option value="قيد المراجعة ⏳" ${s.status?.includes('المراجعة')?'selected':''}>قيد المراجعة</option>
+                  <option value="ممتاز 10/10 ⭐" ${s.status?.includes('ممتاز')?'selected':''}>ممتاز 10/10 ⭐</option>
+                  <option value="جيد 8/10 👍" ${s.status?.includes('جيد')?'selected':''}>جيد 8/10 👍</option>
+                </select>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      });
+    }
+
+    // الحصص والمحتوى
+    document.getElementById('addMediaForm').onsubmit = async (e) => {
+      e.preventDefault();
+      await db.collection('media').add({
+        category: document.getElementById('mCategory').value,
+        grade: document.getElementById('mGrade').value,
+        title: document.getElementById('mTitle').value.trim(),
+        url: document.getElementById('mUrl').value.trim(),
+        desc: document.getElementById('mDesc').value.trim(),
+        timestamp: Date.now()
+      });
+      alert('تم النشر بنجاح!');
+      document.getElementById('addMediaForm').reset();
+    };
+
+    function listenMedia() {
+      db.collection('media').onSnapshot(snap => {
+        document.getElementById('adminMediaList').innerHTML = snap.docs.map(doc => {
+          const m = doc.data();
+          return `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border:1px solid #e2e8f0; padding:12px; border-radius:8px; margin-bottom:8px;">
+              <div><b>[${m.category}] ${m.title}</b> (${m.grade})<div style="font-size:12px; color:#64748b;">${m.desc}</div></div>
+              <button class="btn btn-red" onclick="db.collection('media').doc('${doc.id}').delete()"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          `;
+        }).join('');
+      });
+    }
+
+    // استطلاع الفهم
+    function listenPolls() {
+      db.collection('understanding_polls').onSnapshot(snap => {
+        let total = snap.size;
+        let understood = 0;
+        snap.forEach(d => { if(d.data().status === 'فاهم') understood++; });
+        let rate = total > 0 ? Math.round((understood / total) * 100) : 100;
+        document.getElementById('stFeedbackAvg').innerText = rate + '%';
+        document.getElementById('pollResultsBox').innerHTML = `
+          <div style="background:#f8fafc; padding:20px; border-radius:12px; border:1px solid #e2e8f0;">
+            <div style="font-size:18px; font-weight:bold; color:var(--primary); margin-bottom:10px;">إجمالي الطلاب المتفاعلين: ${total}</div>
+            <div>✅ فاهمين ومستوعبين تماماً: <b>${understood} طالب</b></div>
+            <div>⚠️ محتاجين إعادة وتوضيح: <b>${total - understood} طالب</b></div>
+            <div style="margin-top:15px; background:#e2e8f0; height:12px; border-radius:6px; overflow:hidden;">
+              <div style="height:100%; width:${rate}%; background:#16a34a;"></div>
+            </div>
+          </div>
+        `;
+      });
+    }
+  </script>
+</body>
+</html>

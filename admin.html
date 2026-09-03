@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EL-MISTER | لوحة إدارة مستر سعيد 🎓</title>
+  <link rel="icon" type="image/png" href="logo.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -83,8 +84,8 @@
       <h2 style="color: var(--primary); margin-bottom: 6px;">استوديو مستر سعيد</h2>
       <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 25px;">EL-MISTER Cloud Admin</p>
       <form id="lockForm">
-        <input type="text" id="adminUser" class="form-ctrl" placeholder="اسم المستخدم (admin)" required>
-        <input type="password" id="adminPass" class="form-ctrl" placeholder="كلمة المرور (admin123)" required>
+        <input type="text" id="adminUser" class="form-ctrl" placeholder="اسم المستخدم" required>
+        <input type="password" id="adminPass" class="form-ctrl" placeholder="كلمة المرور" required>
         <button type="submit" class="btn btn-main">دخول لوحة التحكم 🔐</button>
       </form>
     </div>
@@ -138,21 +139,24 @@
       <div class="panel-card">
         <div class="panel-header">
           <div class="panel-title"><i class="fa-solid fa-users"></i> كشوفات الطلاب وقفل الأجهزة والتواصل</div>
-          <select id="filterGrade" class="form-ctrl" style="width:220px; margin:0; height:36px;" onchange="filterStudents()">
-            <option value="all">كل المراحل الدراسية</option>
-            <option value="الصف الأول الابتدائي">الصف الأول الابتدائي</option>
-            <option value="الصف الثاني الابتدائي">الصف الثاني الابتدائي</option>
-            <option value="الصف الثالث الابتدائي">الصف الثالث الابتدائي</option>
-            <option value="الصف الرابع الابتدائي">الصف الرابع الابتدائي</option>
-            <option value="الصف الخامس الابتدائي">الصف الخامس الابتدائي</option>
-            <option value="الصف السادس الابتدائي">الصف السادس الابتدائي</option>
-            <option value="الصف الأول الإعدادي">الصف الأول الإعدادي</option>
-            <option value="الصف الثاني الإعدادي">الصف الثاني الإعدادي</option>
-            <option value="الصف الثالث الإعدادي">الصف الثالث الإعدادي</option>
-            <option value="الصف الأول الثانوي">الصف الأول الثانوي</option>
-            <option value="الصف الثاني الثانوي">الصف الثاني الثانوي</option>
-            <option value="الصف الثالث الثانوي">الصف الثالث الثانوي</option>
-          </select>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button class="btn btn-red" onclick="deleteAllStudents()"><i class="fa-solid fa-trash-can"></i> مسح كل الطلاب دفعة واحدة ⚠️</button>
+            <select id="filterGrade" class="form-ctrl" style="width:220px; margin:0; height:36px;" onchange="filterStudents()">
+              <option value="all">كل المراحل الدراسية</option>
+              <option value="الصف الأول الابتدائي">الصف الأول الابتدائي</option>
+              <option value="الصف الثاني الابتدائي">الصف الثاني الابتدائي</option>
+              <option value="الصف الثالث الابتدائي">الصف الثالث الابتدائي</option>
+              <option value="الصف الرابع الابتدائي">الصف الرابع الابتدائي</option>
+              <option value="الصف الخامس الابتدائي">الصف الخامس الابتدائي</option>
+              <option value="الصف السادس الابتدائي">الصف السادس الابتدائي</option>
+              <option value="الصف الأول الإعدادي">الصف الأول الإعدادي</option>
+              <option value="الصف الثاني الإعدادي">الصف الثاني الإعدادي</option>
+              <option value="الصف الثالث الإعدادي">الصف الثالث الإعدادي</option>
+              <option value="الصف الأول الثانوي">الصف الأول الثانوي</option>
+              <option value="الصف الثاني الثانوي">الصف الثاني الثانوي</option>
+              <option value="الصف الثالث الثانوي">الصف الثالث الثانوي</option>
+            </select>
+          </div>
         </div>
         <div style="overflow-x: auto;">
           <table>
@@ -167,7 +171,7 @@
       </div>
     </div>
 
-    <!-- 2. مجتمع الطلاب (الشات الحي بدون أي أخطاء فهارس) -->
+    <!-- 2. مجتمع الطلاب -->
     <div id="tabCommunity" class="tab-content">
       <div class="panel-card">
         <div class="panel-header">
@@ -314,7 +318,7 @@
               <option value="الصف الثالث الإعدادي">الصف الثالث الإعدادي</option>
             </select>
             <input type="text" id="mTitle" class="form-ctrl" placeholder="العنوان" required>
-            <input type="url" id="mUrl" class="form-ctrl" placeholder="الرابط" required>
+            <input type="file" id="mFile" class="form-ctrl" style="height: auto; padding: 10px;" accept="image/*,application/pdf" required>
             <input type="text" id="mDesc" class="form-ctrl" placeholder="الوصف" required>
             <button type="submit" class="btn btn-main">نشر 📥</button>
           </form>
@@ -350,12 +354,18 @@
 
     let allStudents = [];
 
+    // التحقق من بيانات دخول الأدمن المحدثة
     document.getElementById('lockForm').onsubmit = (e) => {
       e.preventDefault();
-      if(document.getElementById('adminUser').value.trim()==='admin' && document.getElementById('adminPass').value.trim()==='admin123'){
+      const u = document.getElementById('adminUser').value.trim();
+      const p = document.getElementById('adminPass').value.trim();
+
+      if (u === 'SaidSalama' && p === 'Ziadsaid@123') {
         sessionStorage.setItem('adm_auth', '1');
         initAdmin();
-      } else { alert('خطأ في البيانات!'); }
+      } else {
+        alert('بيانات الدخول غير صحيحة!');
+      }
     };
 
     window.onload = () => { if(sessionStorage.getItem('adm_auth')==='1') initAdmin(); };
@@ -411,9 +421,38 @@
             ${s.status==='معلق'?`<button class="btn btn-green" onclick="setSt('${s.id}','نشط')">قبول</button> <button class="btn btn-red" onclick="setSt('${s.id}','محظور')">رفض</button>`:''}
             ${s.status==='نشط'?`<button class="btn btn-warn" onclick="unlockDev('${s.id}')">فك جهاز</button> <button class="btn btn-red" onclick="setSt('${s.id}','محظور')">حظر</button>`:''}
             ${s.status==='محظور'?`<button class="btn btn-green" onclick="setSt('${s.id}','نشط')">تفعيل</button>`:''}
+            <button class="btn btn-red" style="margin-right:4px;" onclick="deleteStudent('${s.id}')"><i class="fa-solid fa-trash"></i> حذف</button>
           </td>
         </tr>
       `).join('');
+    }
+
+    // دالة حذف طالب محدد
+    async function deleteStudent(id) {
+      if (confirm('هل أنت متأكد من حذف هذا الطالب نهائياً من المنصة؟')) {
+        try {
+          await db.collection('students').doc(id).delete();
+          alert('تم حذف الطالب بنجاح!');
+        } catch (err) {
+          alert('حدث خطأ أثناء الحذف: ' + err.message);
+        }
+      }
+    }
+
+    // دالة مسح كل الطلاب دفعة واحدة
+    async function deleteAllStudents() {
+      const confirmWord = prompt('تحذير شديد: سيتم مسح جميع الطلاب المسجلين بالكامل!\nاكتب كلمة (تأكيد) للمتابعة:');
+      if (confirmWord === 'تأكيد') {
+        try {
+          const snap = await db.collection('students').get();
+          const batch = db.batch();
+          snap.docs.forEach(doc => batch.delete(doc.ref));
+          await batch.commit();
+          alert('تم مسح جميع الطلاب من المنصة بنجاح!');
+        } catch (err) {
+          alert('حدث خطأ أثناء المسح: ' + err.message);
+        }
+      }
     }
 
     async function setSt(id, st) { await db.collection('students').doc(id).update({status: st}); }
@@ -440,7 +479,6 @@
 
     function markAllPresent() { alert('تم تسجيل الحضور للجميع!'); }
 
-    // شات المجتمع المباشر (معدل بدون خطأ الفهارس)
     let unsubscribeAdminChat = null;
     function loadCommunityChat() {
       if(unsubscribeAdminChat) unsubscribeAdminChat();
@@ -491,7 +529,6 @@
       document.getElementById('adminReplyText').value = '';
     }
 
-    // لوحة الشرف
     document.getElementById('addHonorForm').onsubmit = async (e) => {
       e.preventDefault();
       await db.collection('honor_board').add({
@@ -521,7 +558,6 @@
       });
     }
 
-    // الاختبارات والمشاريع
     document.getElementById('createTaskForm').onsubmit = async (e) => {
       e.preventDefault();
       await db.collection('tasks').add({
@@ -543,9 +579,9 @@
           return `
             <tr>
               <td><b>${s.studentName}</b><br><small>${s.grade}</small></td>
-              <td>${s.title}</td>
-              <td><a href="${s.fileUrl||s.url}" target="_blank" class="btn btn-main" style="padding:4px 8px; height:30px;">معاينة الحل 🔗</a></td>
               <td>
+  <button class="btn btn-main" style="padding:4px 8px; height:30px;" onclick="viewSubmission('${s.fileUrl}')">معاينة الحل 👁️</button>
+</td>
                 <select class="form-ctrl" style="height:32px; margin:0;" onchange="db.collection('submissions').doc('${doc.id}').update({status:this.value})">
                   <option value="قيد المراجعة ⏳" ${s.status?.includes('المراجعة')?'selected':''}>قيد المراجعة</option>
                   <option value="ممتاز 10/10 ⭐" ${s.status?.includes('ممتاز')?'selected':''}>ممتاز 10/10 ⭐</option>
@@ -558,21 +594,45 @@
       });
     }
 
-    // الحصص والمحتوى
     document.getElementById('addMediaForm').onsubmit = async (e) => {
-      e.preventDefault();
-      await db.collection('media').add({
-        category: document.getElementById('mCategory').value,
-        grade: document.getElementById('mGrade').value,
-        title: document.getElementById('mTitle').value.trim(),
-        url: document.getElementById('mUrl').value.trim(),
-        desc: document.getElementById('mDesc').value.trim(),
-        timestamp: Date.now()
-      });
-      alert('تم النشر بنجاح!');
-      document.getElementById('addMediaForm').reset();
-    };
+  e.preventDefault();
+  const file = document.getElementById('mFile').files[0];
+  if (!file) { alert('اختر ملفاً أولاً!'); return; }
 
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.innerText = 'جاري رفع الملف... ⏳';
+
+  try {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const res = await fetch('https://api.imgbb.com/1/upload?key=c9b0e11ba2ea8148b8830739c9df4dbd', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
+
+    if (!data.success) throw new Error('فشل الرفع');
+
+    await db.collection('media').add({
+      category: document.getElementById('mCategory').value,
+      grade: document.getElementById('mGrade').value,
+      title: document.getElementById('mTitle').value.trim(),
+      url: data.data.url,
+      desc: document.getElementById('mDesc').value.trim(),
+      timestamp: Date.now()
+    });
+
+    alert('تم رفع الملف ونشره بنجاح! 📥');
+    document.getElementById('addMediaForm').reset();
+  } catch (err) {
+    alert('حدث خطأ أثناء الرفع: ' + err.message);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.innerText = 'نشر 📥';
+  }
+};
     function listenMedia() {
       db.collection('media').onSnapshot(snap => {
         document.getElementById('adminMediaList').innerHTML = snap.docs.map(doc => {
@@ -587,7 +647,6 @@
       });
     }
 
-    // استطلاع الفهم
     function listenPolls() {
       db.collection('understanding_polls').onSnapshot(snap => {
         let total = snap.size;
@@ -607,6 +666,6 @@
         `;
       });
     }
-  </script>
+ </script>
 </body>
 </html>

@@ -1,40 +1,405 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-	<div style="width:70px; height:70px; border-radius:50%; background:#104382; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; color:#fff; font-size:32px; box-shadow:0 4px 10px rgba(16,67,130,0.25);">
-  <i class="fa-solid fa-graduation-cap"></i>
-</div>src="https://img.icons8.com/fluency/96/graduation-cap.png"
-  <div style="width:120px; height:120px; border-radius:50%; background:#104382; display:flex; align-items:center; justify-content:center; margin-bottom:15px; color:#fff; font-size:55px; box-shadow:0 8px 20px rgba(16,67,130,0.3);">
-  <i class="fa-solid fa-graduation-cap"></i>
-</div>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-	<title>EL-MISTER | منصة المستر سعيد التعليمية 🎓</title>
-	<link rel="icon" href="logo.png"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-	<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-	<style>
-		:root{--p:#104382;--bg:#f8fafc;--border:#e2e8f0;--muted:#64748b}*{box-sizing:border-box;font-family:Segoe UI,Tahoma,sans-serif;margin:0;padding:0}body{background:var(--bg);color:#0f172a;min-height:100vh}.overlay,.pending{position:fixed;inset:0;background:#fff;z-index:5;display:flex;align-items:center;justify-content:center;padding:25px}.auth{display:flex;width:100%;min-height:100vh}.side{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:35px;text-align:center}.banner{background:#f1f5f9}.box{width:100%;max-width:390px}.input{width:100%;height:44px;padding:0 13px;border:1.5px solid var(--border);border-radius:8px;margin:0 0 12px;font-size:14px;outline:0}.input:focus{border-color:var(--p)}button,.btn{height:44px;border:0;border-radius:8px;background:var(--p);color:#fff;font-weight:bold;cursor:pointer;padding:0 18px}.btn{display:inline-flex;align-items:center;text-decoration:none}.pending{display:none;text-align:center}.pending-box,.card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:25px;box-shadow:0 8px 20px #0000000b}.hourglass{font-size:58px;color:var(--p);animation:spin 2s infinite ease-in-out;margin-bottom:18px}@keyframes spin{50%{transform:rotate(180deg) scale(1.15)}100%{transform:rotate(360deg)}}#studentApp{display:none}.layout{display:flex;min-height:100vh}.sidebar{width:255px;background:#fff;border-left:1px solid var(--border);padding:20px;display:flex;flex-direction:column}.nav{padding:12px 15px;border-radius:8px;color:var(--muted);font-weight:600;cursor:pointer;margin-bottom:5px}.nav:hover,.nav.active{background:#eff6ff;color:var(--p)}main{flex:1;padding:30px}.card{margin-bottom:22px}.muted{color:var(--muted)}.list>div{padding:12px;border:1px solid var(--border);border-radius:8px;margin-top:10px}@media(max-width:700px){.auth{display:block}.banner{display:none}.sidebar{width:190px}main{padding:15px}.tasks{display:block!important}}
-	</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EL-MISTER | منصة المستر سعيد التعليمية 🎓</title>
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <style>
+    :root {
+      --primary: #104382; --primary-hover: #0d3568; --bg: #f8fafc;
+      --card-bg: #ffffff; --border: #e2e8f0; --text: #0f172a; --text-muted: #64748b;
+      --success: #16a34a; --danger: #dc2626; --warning: #d97706;
+    }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; }
+    
+    /* شاشة الدخول والتسجيل */
+    #authOverlay { position: fixed; inset: 0; background: #fff; z-index: 1000; display: flex; }
+    .auth-side-banner { flex: 1; background: #f1f5f9; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; }
+    .auth-side-form { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; }
+    .auth-box { width: 100%; max-width: 380px; }
+    .form-input { width: 100%; height: 44px; padding: 0 14px; border: 1.5px solid var(--border); border-radius: 8px; margin-bottom: 12px; outline: none; font-size: 14px; }
+    .form-input:focus { border-color: var(--primary); }
+    .btn-action { width: 100%; height: 44px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+    /* شاشة الانتظار مع الساعة الرملية المتحركة */
+    #pendingScreen {
+      position: fixed; inset: 0; background: #ffffff; z-index: 2000;
+      display: none; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center;
+    }
+    .hourglass-spin {
+      font-size: 65px; color: var(--primary);
+      animation: spinFlip 2s infinite ease-in-out;
+      margin-bottom: 25px;
+    }
+    @keyframes spinFlip {
+      0% { transform: rotate(0deg) scale(1); }
+      50% { transform: rotate(180deg) scale(1.15); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+    .pending-box {
+      max-width: 440px; background: #f8fafc; border: 1px solid var(--border); border-radius: 16px; padding: 35px 25px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    }
+
+    /* التطبيق الرئيسي للطالب */
+    #studentApp { display: none; }
+    .app-layout { display: flex; min-height: 100vh; }
+    .sidebar { width: 260px; background: #fff; border-left: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; }
+    .nav-item { padding: 12px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; color: var(--text-muted); font-weight: 600; margin-bottom: 5px; }
+    .nav-item.active, .nav-item:hover { background: #eff6ff; color: var(--primary); }
+    .main-content { flex: 1; padding: 30px; }
+    .card { background: #fff; border-radius: 12px; border: 1px solid var(--border); padding: 24px; margin-bottom: 24px; }
+  </style>
 </head>
 <body>
-	<div id="authOverlay" class="overlay"><div class="auth">
-		<section class="side"><div class="box"><img src="logo.png" width="70" height="70" alt="لوجو"><h2 style="color:var(--p);margin:10px">منصة المستر</h2><p class="muted" style="font-size:13px;margin-bottom:20px">بوابة الطالب لتسجيل الدخول والاشتراك</p>
-			<form id="studentAuthForm"><input id="stName" class="input" placeholder="اسم الطالب رباعي (باللغة العربية فقط)" required><input id="stNameEn" class="input" placeholder="Full Student Name (English Only)" required><input id="stPhone" class="input" type="tel" placeholder="رقم هاتف الطالب (11 رقم)" required><input id="stParentPhone" class="input" type="tel" placeholder="رقم هاتف ولي الأمر (11 رقم)" required><select id="stGrade" class="input" required><option value="">-- اختر مرحلتك الدراسية --</option><option>الصف الأول الابتدائي</option><option>الصف الثاني الابتدائي</option><option>الصف الثالث الابتدائي</option><option>الصف الرابع الابتدائي</option><option>الصف الخامس الابتدائي</option><option>الصف السادس الابتدائي</option><option>الصف الأول الإعدادي</option><option>الصف الثاني الإعدادي</option><option>الصف الثالث الإعدادي</option><option>الصف الأول الثانوي</option><option>الصف الثاني الثانوي</option><option>الصف الثالث الثانوي</option></select><button style="width:100%">تسجيل / إرسال طلب للمستر</button></form>
-		</div></section><section class="side banner"><img src="logo.png" width="130" height="130" alt="لوجو"><h1 style="color:var(--p);margin:12px">EL-MISTER</h1><p class="muted">منصة المستر سعيد التعليمية لمتابعة اللغة الإنجليزية بأحدث النظم</p></section>
-	</div></div>
-	<div id="pendingScreen" class="pending"><div class="pending-box"><div class="hourglass"><i class="fa-solid fa-hourglass-half"></i></div><h2 style="color:var(--p)">طلبك قيد المراجعة ⏳</h2><p class="muted" style="line-height:1.8;margin:12px 0 20px">أهلاً بك يا <b id="pendingStName"></b>! تم استلام بياناتك وفي انتظار موافقة مستر سعيد.</p><button onclick="checkAccountStatus()">تحديث الحالة 🔄</button> <button onclick="studentLogout()" style="background:#ef4444">تسجيل خروج 🚪</button></div></div>
-	<div id="studentApp"><div class="layout"><aside class="sidebar"><div style="text-align:center;margin-bottom:25px"><img src="logo.png" width="60" height="60" alt="لوجو"><b style="display:block;color:var(--p)">EL-MISTER</b></div><div class="nav active" onclick="tab('home',this)"><i class="fa fa-house"></i> الرئيسية</div><div class="nav" onclick="tab('lessons',this)"><i class="fa fa-video"></i> الحصص والمذكرات</div><div class="nav" onclick="tab('tasks',this)"><i class="fa fa-pen-ruler"></i> الواجبات والاختبارات</div><div class="nav" onclick="tab('honor',this)"><i class="fa fa-award"></i> لوحة الشرف</div><div class="nav" onclick="tab('chat',this)"><i class="fa fa-comments"></i> شات المجتمع</div><button onclick="studentLogout()" style="margin-top:auto;background:#fee2e2;color:#dc2626">خروج 🚪</button></aside><main>
-		<section id="home" class="student-tab"><div class="card"><h2>أهلاً بك يا <span id="displayStudentName" style="color:var(--p)"></span> 🎓</h2><p class="muted">المرحلة الدراسية: <b id="displayStudentGrade"></b></p></div><div class="card"><h3>استطلاع فهم الحصص 📊</h3><p class="muted" style="margin:10px 0">شاركنا رأيك في مدى استيعابك:</p><button onclick="poll('فاهم')" style="background:#16a34a">فاهم ومستوعب تماماً 👍</button> <button onclick="poll('محتاج إعادة')" style="background:#d97706">محتاج إعادة نقطة معينة ✋</button></div></section>
-		<section id="lessons" class="student-tab" style="display:none"><div class="card"><h3>الحصص والمذكرات الخاصة بمرحلتك</h3><div id="lessonsList" class="list"></div></div></section>
-		<section id="tasks" class="student-tab" style="display:none"><div class="card"><h3>تسليم الواجب أو حل الامتحان للمستر 📤</h3><form id="taskForm" style="margin-top:15px"><input id="taskTitle" class="input" placeholder="عنوان الواجب أو الامتحان" required><input id="taskUrl" class="input" type="url" placeholder="رابط الحل" required><textarea id="taskNotes" class="input" style="height:80px" placeholder="ملاحظات إضافية"></textarea><button style="width:100%">إرسال الحل للمستر 🚀</button></form><hr style="margin:25px 0;border:0;border-top:1px solid var(--border)"><h3>المهام والاختبارات المطلوبة</h3><div id="tasksList" class="list"></div></div></section>
-		<section id="honor" class="student-tab" style="display:none"><div class="card"><h3>لوحة الشرف 🏆</h3><div id="honorList" class="list"></div></div></section><section id="chat" class="student-tab" style="display:none"><div class="card"><h3>شات المجتمع الصفي 💬</h3><div id="chatStream" style="height:300px;overflow:auto;border:1px solid var(--border);padding:15px;margin:15px 0"></div><input id="chatText" class="input" placeholder="اكتب رسالتك..."><button onclick="sendChat()">إرسال</button></div></section>
-	</main></div></div>
-	<script>
-		firebase.initializeApp({apiKey:'AIzaSyBQDpzEy7llbyiF6OdvG8PsuVvjJu4PWtk',authDomain:'el-master-aca19.firebaseapp.com',projectId:'el-master-aca19',storageBucket:'el-master-aca19.firebasestorage.app',messagingSenderId:'998446175218',appId:'1:998446175218:web:f911680ba3cbb3edead16b'});const db=firebase.firestore();let currentSt=null;
-		const $=id=>document.getElementById(id),device=()=>localStorage.elmister_dev_id||(localStorage.elmister_dev_id='dev_'+Math.random().toString(36).slice(2,10));
-		onload=()=>{const p=localStorage.elmister_saved_phone;if(p)verify(p)};$('studentAuthForm').onsubmit=async e=>{e.preventDefault();const phone=$('stPhone').value.trim(),d=await db.collection('students').doc(phone).get();if(d.exists)return verify(phone);const s={name:$('stName').value.trim(),nameEn:$('stNameEn').value.trim(),phone,parentPhone:$('stParentPhone').value.trim(),grade:$('stGrade').value,status:'معلق',deviceId:device(),createdAt:Date.now()};await db.collection('students').doc(phone).set(s);localStorage.elmister_saved_phone=phone;pending(s.name)};
-		async function verify(p){const d=await db.collection('students').doc(p).get();if(!d.exists)return;const s=d.data();if(s.status==='معلق')return pending(s.name);if(s.status==='محظور')return alert('حسابك موقوف، يرجى مراجعة مستر سعيد!');if(s.deviceId&&s.deviceId!==device())return alert('هذا الحساب مربوط بجهاز آخر!');currentSt=s;localStorage.elmister_saved_phone=p;start()};function pending(n){$('authOverlay').style.display='none';$('studentApp').style.display='none';$('pendingScreen').style.display='flex';$('pendingStName').textContent=n||''}function checkAccountStatus(){const p=localStorage.elmister_saved_phone;p?verify(p):location.reload()}function start(){$('authOverlay').style.display='none';$('pendingScreen').style.display='none';$('studentApp').style.display='block';$('displayStudentName').textContent=currentSt.name;$('displayStudentGrade').textContent=currentSt.grade;load()};function studentLogout(){localStorage.removeItem('elmister_saved_phone');location.reload()};function tab(id,el){document.querySelectorAll('.student-tab').forEach(x=>x.style.display='none');document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));$(id).style.display='block';el.classList.add('active')}
-		$('taskForm').onsubmit=async e=>{e.preventDefault();await db.collection('submissions').add({studentName:currentSt.name,grade:currentSt.grade,phone:currentSt.phone,title:$('taskTitle').value,fileUrl:$('taskUrl').value,notes:$('taskNotes').value,status:'قيد المراجعة ⏳',submittedAt:new Date().toLocaleString('ar-EG')});alert('تم إرسال الحل بنجاح! 🚀');e.target.reset()};async function poll(status){await db.collection('understanding_polls').add({studentName:currentSt.name,grade:currentSt.grade,status,timestamp:Date.now()});alert('شكراً لمشاركتك رأيك! ❤️')}
-		function load(){db.collection('media').where('grade','==',currentSt.grade).onSnapshot(s=>$('lessonsList').innerHTML=s.docs.map(x=>{const m=x.data();return `<div><b>[${m.category}] ${m.title}</b><p class="muted">${m.desc||''}</p><a class="btn" href="${m.url}" target="_blank">فتح الرابط 🔗</a></div>`}).join('')||'<p class="muted">لا توجد حصص منشورة بعد.</p>');db.collection('tasks').where('grade','==',currentSt.grade).onSnapshot(s=>$('tasksList').innerHTML=s.docs.map(x=>{const t=x.data();return `<div><b>${t.title} (${t.type})</b><p class="muted">آخر موعد: ${t.deadline}</p><a class="btn" href="${t.url}" target="_blank">بدء المهمة 🔗</a></div>`}).join('')||'<p class="muted">لا توجد واجبات حالياً.</p>');db.collection('honor_board').onSnapshot(s=>$('honorList').innerHTML=s.docs.map(x=>{const h=x.data();return `<div><b>${h.rank} - ${h.name} (${h.grade})</b> <strong style="color:var(--p)">${h.score}</strong></div>`}).join('')||'<p class="muted">لا يوجد متفوقون حالياً.</p>');db.collection('chat').onSnapshot(s=>{$('chatStream').innerHTML=s.docs.map(x=>{const m=x.data();return `<p><b>${m.sender}:</b> ${m.text}</p>`}).join('');$('chatStream').scrollTop=$('chatStream').scrollHeight})};async function sendChat(){const t=$('chatText').value.trim();if(!t)return;await db.collection('chat').add({grade:currentSt.grade,sender:currentSt.name,text:t,timestamp:Date.now()});$('chatText').value=''}
-	</script>
-</body></html>
+
+  <!-- شاشة التسجيل الأولي والدخول -->
+  <div id="authOverlay">
+    <div class="auth-side-form">
+      <div class="auth-box">
+        <div style="text-align:center; margin-bottom:20px;">
+          <img src="logo.png" style="width:70px; height:70px; border-radius:50%; margin-bottom:10px; object-fit:contain;" alt="لوجو">
+          <h2 style="color:var(--primary);">منصة المستر</h2>
+          <p style="color:var(--text-muted); font-size:13px;">بوابة الطالب لتسجيل الدخول والاشتراك</p>
+        </div>
+        <form id="studentAuthForm">
+          <!-- كتابة عربي فقط -->
+          <input type="text" id="stName" class="form-input" placeholder="اسم الطالب رباعي (باللغة العربية فقط)" required 
+                 oninput="this.value = this.value.replace(/[^\u0600-\u06FF\s]/g, '')">
+          
+          <!-- كتابة إنجليزي فقط -->
+          <input type="text" id="stNameEn" class="form-input" placeholder="Full Student Name (English Only)" required 
+                 oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
+          
+          <input type="tel" id="stPhone" class="form-input" placeholder="رقم هاتف الطالب (11 رقم)" required>
+          <input type="tel" id="stParentPhone" class="form-input" placeholder="رقم هاتف ولي الأمر (11 رقم)" required>
+          <select id="stGrade" class="form-input" required>
+            <option value="">-- اختر مرحلتك الدراسية --</option>
+            <option value="الصف الأول الابتدائي">الصف الأول الابتدائي</option>
+            <option value="الصف الثاني الابتدائي">الصف الثاني الابتدائي</option>
+            <option value="الصف الثالث الابتدائي">الصف الثالث الابتدائي</option>
+            <option value="الصف الرابع الابتدائي">الصف الرابع الابتدائي</option>
+            <option value="الصف الخامس الابتدائي">الصف الخامس الابتدائي</option>
+            <option value="الصف السادس الابتدائي">الصف السادس الابتدائي</option>
+            <option value="الصف الأول الإعدادي">الصف الأول الإعدادي</option>
+            <option value="الصف الثاني الإعدادي">الصف الثاني الإعدادي</option>
+            <option value="الصف الثالث الإعدادي">الصف الثالث الإعدادي</option>
+            <option value="الصف الأول الثانوي">الصف الأول الثانوي</option>
+            <option value="الصف الثاني الثانوي">الصف الثاني الثانوي</option>
+            <option value="الصف الثالث الثانوي">الصف الثالث الثانوي</option>
+          </select>
+          <button type="submit" class="btn-action">تسجيل / إرسال طلب للمستر</button>
+        </form>
+      </div>
+    </div>
+    <div class="auth-side-banner">
+      <img src="logo.png" style="width:130px; height:130px; border-radius:50%; margin-bottom:15px; object-fit:contain;" alt="لوجو">
+      <h1 style="color:var(--primary); margin-bottom:10px;">EL-MISTER</h1>
+      <p style="color:var(--text-muted); text-align:center;">منصة المستر سعيد التعليمية لمتابعة اللغة الإنجليزية بأحدث النظم</p>
+    </div>
+  </div>
+
+  <!-- شاشة الانتظار بالساعة الرملية الدوارة -->
+  <div id="pendingScreen">
+    <div class="pending-box">
+      <div class="hourglass-spin">
+        <i class="fa-solid fa-hourglass-half"></i>
+      </div>
+      <h2 style="color:var(--primary); margin-bottom:10px;">طلبك قيد المراجعة ⏳</h2>
+      <p style="color:var(--text-muted); font-size:14px; line-height:1.6; margin-bottom:20px;">
+        أهلاً بك يا <b id="pendingStName" style="color:var(--text);"></b>! تم استلام بياناتك بنجاح وفي انتظار موافقة مستر سعيد على تفعيل حسابك للدخول إلى الحصص والمحتوى.
+      </p>
+      <div style="display:flex; gap:10px; justify-content:center;">
+        <button onclick="checkAccountStatus()" class="btn-action" style="width:auto; padding:0 20px;">تحديث الحالة 🔄</button>
+        <button onclick="studentLogout()" class="btn-action" style="width:auto; padding:0 20px; background:#ef4444;">تسجيل خروج 🚪</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- التطبيق بعد تفعيل الحساب -->
+  <div id="studentApp">
+    <div class="app-layout">
+      <aside class="sidebar">
+        <div style="text-align:center; margin-bottom:25px;">
+          <img src="logo.png" style="width:60px; height:60px; border-radius:50%; margin-bottom:8px; object-fit:contain;" alt="لوجو">
+          <div style="font-weight:bold; color:var(--primary);">EL-MISTER</div>
+        </div>
+        <div class="nav-item active" onclick="switchStudentTab('stHome', this)"><i class="fa-solid fa-house"></i> الرئيسية</div>
+        <div class="nav-item" onclick="switchStudentTab('stLessons', this)"><i class="fa-solid fa-video"></i> الحصص والمذكرات</div>
+        <div class="nav-item" onclick="switchStudentTab('stTasks', this)"><i class="fa-solid fa-pen-ruler"></i> الواجبات والاختبارات</div>
+        <div class="nav-item" onclick="switchStudentTab('stHonor', this)"><i class="fa-solid fa-award"></i> لوحة الشرف</div>
+        <div class="nav-item" onclick="switchStudentTab('stChat', this)"><i class="fa-solid fa-comments"></i> شات المجتمع</div>
+        <div style="margin-top:auto;">
+          <button onclick="studentLogout()" class="btn-action" style="background:#fee2e2; color:#dc2626;">خروج 🚪</button>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <div id="stHome" class="student-tab">
+          <div class="card">
+            <h2>أهلاً بك يا <span id="displayStudentName" style="color:var(--primary);"></span> 🎓</h2>
+            <p style="color:var(--text-muted); margin-top:5px;">المرحلة الدراسية: <span id="displayStudentGrade" style="font-weight:bold;"></span></p>
+          </div>
+          <div class="card">
+            <h3>استطلاع فهم الحصص 📊</h3>
+            <p style="color:var(--text-muted); font-size:13px; margin-bottom:12px;">شاركنا رأيك في مدى استيعابك لشرح مستر سعيد:</p>
+            <button class="btn-action" style="width:auto; padding:0 20px; background:#16a34a;" onclick="submitPoll('فاهم')">فاهم ومستوعب تماماً 👍</button>
+            <button class="btn-action" style="width:auto; padding:0 20px; background:#d97706; margin-right:10px;" onclick="submitPoll('محتاج إعادة')">محتاج إعادة نقطة معينة ✋</button>
+          </div>
+        </div>
+
+        <div id="stLessons" class="student-tab" style="display:none;">
+          <div class="card">
+            <h3>الحصص والمذكرات الخاصة بمرحلتك</h3>
+            <div id="studentLessonsList" style="margin-top:15px;"></div>
+          </div>
+        </div>
+
+        <div id="stTasks" class="student-tab" style="display:none;">
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+            <div class="card">
+              <h3>تسليم الواجب أو حل الامتحان للمستر 📤</h3>
+              <form id="submitTaskForm" style="margin-top:15px;">
+                <input type="text" id="subTaskTitle" class="form-input" placeholder="عنوان الواجب أو الامتحان" required>
+                <input type="url" id="subTaskUrl" class="form-input" placeholder="رابط الحل (Google Drive أو رابط مباشر)" required>
+                <textarea id="subTaskNotes" class="form-input" style="height:80px; resize:none;" placeholder="أي ملاحظات إضافية للمستر..."></textarea>
+                <button type="submit" class="btn-action">إرسال الحل للمستر 🚀</button>
+              </form>
+            </div>
+            <div class="card">
+              <h3>المهام والاختبارات المطلوبة منك</h3>
+              <div id="studentTasksList" style="margin-top:15px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="stHonor" class="student-tab" style="display:none;">
+          <div class="card">
+            <h3>لوحة الشرف وتكريم المتفوقين 🏆</h3>
+            <div id="studentHonorList" style="margin-top:15px;"></div>
+          </div>
+        </div>
+
+        <div id="stChat" class="student-tab" style="display:none;">
+          <div class="card">
+            <h3>شات المجتمع الصفي 💬</h3>
+            <div id="studentChatStream" style="height:350px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; padding:15px; margin:15px 0; background:#f8fafc;"></div>
+            <div style="display:flex; gap:10px;">
+              <input type="text" id="stChatText" class="form-input" style="margin:0;" placeholder="اكتب رسالتك لزمايلك والمستر...">
+              <button class="btn-action" style="width:120px;" onclick="sendStudentChatMessage()">إرسال</button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBQDpzEy7llbyiF6OdvG8PsuVvjJu4PWtk",
+      authDomain: "el-master-aca19.firebaseapp.com",
+      projectId: "el-master-aca19",
+      storageBucket: "el-master-aca19.firebasestorage.app",
+      messagingSenderId: "998446175218",
+      appId: "1:998446175218:web:f911680ba3cbb3edead16b"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let currentSt = null;
+    let savedPhone = localStorage.getItem('elmister_saved_phone');
+
+    function getDeviceId() {
+      let id = localStorage.getItem('elmister_dev_id');
+      if(!id) {
+        id = 'dev_' + Math.random().toString(36).substring(2, 10);
+        localStorage.setItem('elmister_dev_id', id);
+      }
+      return id;
+    }
+
+    // التحقق التلقائي عند فتح الصفحة
+    window.onload = () => {
+      if(savedPhone) {
+        verifyUser(savedPhone);
+      }
+    };
+
+    document.getElementById('studentAuthForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const phone = document.getElementById('stPhone').value.trim();
+      const devId = getDeviceId();
+      const doc = await db.collection('students').doc(phone).get();
+
+      if(doc.exists) {
+        verifyUser(phone);
+      } else {
+        const studentData = {
+          name: document.getElementById('stName').value.trim(),
+          nameEn: document.getElementById('stNameEn').value.trim(),
+          phone: phone,
+          parentPhone: document.getElementById('stParentPhone').value.trim(),
+          grade: document.getElementById('stGrade').value,
+          status: 'معلق',
+          deviceId: devId,
+          createdAt: Date.now()
+        };
+        await db.collection('students').doc(phone).set(studentData);
+        localStorage.setItem('elmister_saved_phone', phone);
+        showPending(studentData.name);
+      }
+    };
+
+    async function verifyUser(phone) {
+      const doc = await db.collection('students').doc(phone).get();
+      if(!doc.exists) return;
+      const data = doc.data();
+      const devId = getDeviceId();
+
+      if(data.status === 'معلق') {
+        showPending(data.name);
+        return;
+      }
+      if(data.status === 'محظور') {
+        alert('حسابك موقوف، يرجى مراجعة مستر سعيد!');
+        return;
+      }
+      if(data.deviceId && data.deviceId !== devId) {
+        alert('هذا الحساب مربوط بجهاز آخر! تواصل مع مستر سعيد لفك جهازك.');
+        return;
+      }
+      if(!data.deviceId) {
+        await db.collection('students').doc(phone).update({deviceId: devId});
+      }
+
+      currentSt = data;
+      localStorage.setItem('elmister_saved_phone', phone);
+      startApp();
+    }
+
+    function showPending(name) {
+      document.getElementById('authOverlay').style.display = 'none';
+      document.getElementById('studentApp').style.display = 'none';
+      document.getElementById('pendingScreen').style.display = 'flex';
+      document.getElementById('pendingStName').innerText = name || '';
+    }
+
+    function checkAccountStatus() {
+      const p = localStorage.getItem('elmister_saved_phone');
+      if(p) verifyUser(p);
+      else location.reload();
+    }
+
+    function startApp() {
+      document.getElementById('authOverlay').style.display = 'none';
+      document.getElementById('pendingScreen').style.display = 'none';
+      document.getElementById('studentApp').style.display = 'block';
+      document.getElementById('displayStudentName').innerText = currentSt.name;
+      document.getElementById('displayStudentGrade').innerText = currentSt.grade;
+      loadStudentData();
+    }
+
+    function studentLogout() {
+      localStorage.removeItem('elmister_saved_phone');
+      location.reload();
+    }
+
+    function switchStudentTab(id, el) {
+      document.querySelectorAll('.student-tab').forEach(t => t.style.display = 'none');
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      document.getElementById(id).style.display = 'block';
+      el.classList.add('active');
+    }
+
+    document.getElementById('submitTaskForm').onsubmit = async (e) => {
+      e.preventDefault();
+      await db.collection('submissions').add({
+        studentName: currentSt.name,
+        grade: currentSt.grade,
+        phone: currentSt.phone,
+        title: document.getElementById('subTaskTitle').value.trim(),
+        fileUrl: document.getElementById('subTaskUrl').value.trim(),
+        notes: document.getElementById('subTaskNotes').value.trim(),
+        status: 'قيد المراجعة ⏳',
+        submittedAt: new Date().toLocaleString('ar-EG')
+      });
+      alert('تم إرسال الحل لمستر سعيد بنجاح! 🚀');
+      document.getElementById('submitTaskForm').reset();
+    };
+
+    async function submitPoll(status) {
+      await db.collection('understanding_polls').add({
+        studentName: currentSt.name,
+        grade: currentSt.grade,
+        status: status,
+        timestamp: Date.now()
+      });
+      alert('شكراً لمشاركتك رأيك مع مستر سعيد! ❤️');
+    }
+
+    function loadStudentData() {
+      db.collection('media').where('grade', '==', currentSt.grade).onSnapshot(s => {
+        document.getElementById('studentLessonsList').innerHTML = s.docs.map(d => {
+          const m = d.data();
+          return `<div style="padding:12px; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+            <div><b>[${m.category}] ${m.title}</b><div style="font-size:12px; color:#64748b;">${m.desc}</div></div>
+            <a href="${m.url}" target="_blank" class="btn-action" style="width:auto; padding:0 14px; height:36px; line-height:36px; text-decoration:none;">فتح الرابط 🔗</a>
+          </div>`;
+        }).join('') || '<p style="color:#64748b;">لا توجد حصص منشورة بعد.</p>';
+      });
+
+      db.collection('tasks').where('grade', '==', currentSt.grade).onSnapshot(s => {
+        document.getElementById('studentTasksList').innerHTML = s.docs.map(d => {
+          const t = d.data();
+          return `<div style="padding:12px; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:10px;">
+            <b>${t.title} (${t.type})</b>
+            <div style="font-size:12px; color:#64748b; margin:4px 0;">آخر موعد: ${t.deadline}</div>
+            <a href="${t.url}" target="_blank" class="btn-action" style="display:inline-block; width:auto; padding:0 12px; height:32px; line-height:32px; text-decoration:none; font-size:12px;">بدء المهمة / الاختبار 🔗</a>
+          </div>`;
+        }).join('') || '<p style="color:#64748b;">لا توجد واجبات حالياً.</p>';
+      });
+
+      db.collection('honor_board').onSnapshot(s => {
+        let list = [];
+        s.forEach(d => list.push(d.data()));
+        document.getElementById('studentHonorList').innerHTML = list.map(h => `
+          <div style="padding:10px 14px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between;">
+            <b>${h.rank} - ${h.name} (${h.grade})</b>
+            <span style="color:var(--primary); font-weight:bold;">${h.score}</span>
+          </div>
+        `).join('') || '<p style="color:#64748b;">لا يوجد متفوقين مثبتين حالياً.</p>';
+      });
+
+      db.collection('chat').onSnapshot(s => {
+        let msgs = [];
+        s.forEach(d => msgs.push(d.data()));
+        msgs.sort((a,b)=>(a.timestamp||0)-(b.timestamp||0));
+        const stream = document.getElementById('studentChatStream');
+        stream.innerHTML = msgs.map(m => `
+          <div style="margin-bottom:8px;">
+            <b style="color:${m.sender.includes('المستر')?'#104382':'#0f172a'};">${m.sender}:</b> <span>${m.text}</span>
+          </div>
+        `).join('');
+        stream.scrollTop = stream.scrollHeight;
+      });
+    }
+
+    async function sendStudentChatMessage() {
+      const txt = document.getElementById('stChatText').value.trim();
+      if(!txt) return;
+      await db.collection('chat').add({
+        grade: currentSt.grade,
+        sender: currentSt.name,
+        text: txt,
+        timestamp: Date.now()
+      });
+      document.getElementById('stChatText').value = '';
+    }
+  </script>
+</body>
+</html>

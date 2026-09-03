@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EL-MISTER | لوحة إدارة مستر سعيد 🎓</title>
-  <link rel="icon" type="image/png" href="logo.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -78,10 +77,12 @@
 </head>
 <body>
 
-  <!-- شاشة قفل الأدمن -->
+  <!-- شاشة القفل -->
   <div id="adminLockScreen">
     <div class="lock-card">
-      <div style="font-size: 36px; color: var(--primary); margin-bottom: 10px;"><i class="fa-solid fa-graduation-cap"></i></div>
+      <div style="width:70px; height:70px; border-radius:50%; background:#104382; display:flex; align-items:center; justify-content:center; margin:0 auto 15px; color:#fff; font-size:32px; box-shadow:0 4px 10px rgba(16,67,130,0.25);">
+        <i class="fa-solid fa-graduation-cap"></i>
+      </div>
       <h2 style="color: var(--primary); margin-bottom: 6px;">استوديو مستر سعيد</h2>
       <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 25px;">EL-MISTER Cloud Admin</p>
       <form id="lockForm">
@@ -105,7 +106,7 @@
       </div>
     </header>
 
-    <!-- الإحصائيات السريعة -->
+    <!-- الإحصائيات -->
     <div class="stats-row">
       <div class="stat-card">
         <div><div style="font-size:12px; color:var(--text-muted);">إجمالي الطلاب</div><div class="stat-num" id="stCountTotal">0</div></div>
@@ -125,7 +126,7 @@
       </div>
     </div>
 
-    <!-- أزرار التبويبات -->
+    <!-- التبويبات -->
     <div class="tabs-nav">
       <button class="tab-btn active" onclick="switchTab('tabStudents', this)"><i class="fa-solid fa-users"></i> الطلاب والاشتراكات</button>
       <button class="tab-btn" onclick="switchTab('tabCommunity', this)"><i class="fa-solid fa-comments"></i> شات المجتمع المباشر</button>
@@ -180,18 +181,18 @@
           <div class="panel-title"><i class="fa-solid fa-comments"></i> متابعة رسايل الطلاب الحية والرد عليهم</div>
           <select id="chatGradeFilter" class="form-ctrl" style="width:240px; margin:0; height:36px;" onchange="loadCommunityChat()">
             <option value="all">كل المراحل معاً</option>
-            <option value="الصف الأول الثانوي">الصف الأول الثانوي</option>
-            <option value="الصف الثاني الثانوي">الصف الثاني الثانوي</option>
-            <option value="الصف الثالث الثانوي">الصف الثالث الثانوي</option>
+            <option value="الصف الأول الابتدائي">الصف الأول الابتدائي</option>
+            <option value="الصف الثاني الابتدائي">الصف الثاني الابتدائي</option>
+            <option value="الصف الثالث الابتدائي">الصف الثالث الابتدائي</option>
+            <option value="الصف الرابع الابتدائي">الصف الرابع الابتدائي</option>
+            <option value="الصف الخامس الابتدائي">الصف الخامس الابتدائي</option>
+            <option value="الصف السادس الابتدائي">الصف السادس الابتدائي</option>
             <option value="الصف الأول الإعدادي">الصف الأول الإعدادي</option>
             <option value="الصف الثاني الإعدادي">الصف الثاني الإعدادي</option>
             <option value="الصف الثالث الإعدادي">الصف الثالث الإعدادي</option>
-            <option value="الصف السادس الابتدائي">الصف السادس الابتدائي</option>
-            <option value="الصف الخامس الابتدائي">الصف الخامس الابتدائي</option>
-            <option value="الصف الرابع الابتدائي">الصف الرابع الابتدائي</option>
-            <option value="الصف الثالث الابتدائي">الصف الثالث الابتدائي</option>
-            <option value="الصف الثاني الابتدائي">الصف الثاني الابتدائي</option>
-            <option value="الصف الأول الابتدائي">الصف الأول الابتدائي</option>
+            <option value="الصف الأول الثانوي">الصف الأول الثانوي</option>
+            <option value="الصف الثاني الثانوي">الصف الثاني الثانوي</option>
+            <option value="الصف الثالث الثانوي">الصف الثالث الثانوي</option>
           </select>
         </div>
         <div id="adminChatStream" style="height:380px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; padding:15px; margin-bottom:15px; background:#f8fafc;">
@@ -213,18 +214,18 @@
             <input type="text" id="hnName" class="form-ctrl" placeholder="اسم الطالب المتفوق" required>
             <select id="hnGrade" class="form-ctrl" required>
               <option value="كل المراحل">لكل المنصة (عام)</option>
-              <option value="الصف الأول الثانوي">الصف الأول الثانوي</option>
-              <option value="الصف الثاني الثانوي">الصف الثاني الثانوي</option>
-              <option value="الصف الثالث الثانوي">الصف الثالث الثانوي</option>
+              <option value="الصف الأول الابتدائي">الصف الأول الابتدائي</option>
+              <option value="الصف الثاني الابتدائي">الصف الثاني الابتدائي</option>
+              <option value="الصف الثالث الابتدائي">الصف الثالث الابتدائي</option>
+              <option value="الصف الرابع الابتدائي">الصف الرابع الابتدائي</option>
+              <option value="الصف الخامس الابتدائي">الصف الخامس الابتدائي</option>
+              <option value="الصف السادس الابتدائي">الصف السادس الابتدائي</option>
               <option value="الصف الأول الإعدادي">الصف الأول الإعدادي</option>
               <option value="الصف الثاني الإعدادي">الصف الثاني الإعدادي</option>
               <option value="الصف الثالث الإعدادي">الصف الثالث الإعدادي</option>
-              <option value="الصف السادس الابتدائي">الصف السادس الابتدائي</option>
-              <option value="الصف الخامس الابتدائي">الصف الخامس الابتدائي</option>
-              <option value="الصف الرابع الابتدائي">الصف الرابع الابتدائي</option>
-              <option value="الصف الثالث الابتدائي">الصف الثالث الابتدائي</option>
-              <option value="الصف الثاني الابتدائي">الصف الثاني الابتدائي</option>
-              <option value="الصف الأول الابتدائي">الصف الأول الابتدائي</option>
+              <option value="الصف الأول الثانوي">الصف الأول الثانوي</option>
+              <option value="الصف الثاني الثانوي">الصف الثاني الثانوي</option>
+              <option value="الصف الثالث الثانوي">الصف الثالث الثانوي</option>
             </select>
             <input type="text" id="hnScore" class="form-ctrl" placeholder="الدرجة أو الإنجاز" required>
             <input type="text" id="hnRank" class="form-ctrl" placeholder="الترتيب (مثال: المركز الأول 🥇)" required>
@@ -259,25 +260,31 @@
       </div>
     </div>
 
-    <!-- 5. الاختبارات والواجبات -->
+    <!-- 5. الاختبارات والواجبات والمشاريع -->
     <div id="tabExamsProj" class="tab-content">
       <div style="display:grid; grid-template-columns: 360px 1fr; gap:20px;">
         <div class="panel-card">
-          <div class="panel-header"><div class="panel-title">نشر اختبار أو واجب جديد</div></div>
+          <div class="panel-header"><div class="panel-title">نشر اختبار أو مشروع واجب جديد</div></div>
           <form id="createTaskForm">
             <select id="tskType" class="form-ctrl">
               <option value="واجب">مشروع واجب أسبوعي</option>
               <option value="اختبار">امتحان / كويز إلكتروني</option>
             </select>
-            <select id="tskGrade" class="form-ctrl">
-              <option value="الصف الأول الثانوي">الصف الأول الثانوي</option>
-              <option value="الصف الثاني الثانوي">الصف الثاني الثانوي</option>
-              <option value="الصف الثالث الثانوي">الصف الثالث الثانوي</option>
+            <select id="tskGrade" class="form-ctrl" required>
+              <option value="الصف الأول الابتدائي">الصف الأول الابتدائي</option>
+              <option value="الصف الثاني الابتدائي">الصف الثاني الابتدائي</option>
+              <option value="الصف الثالث الابتدائي">الصف الثالث الابتدائي</option>
+              <option value="الصف الرابع الابتدائي">الصف الرابع الابتدائي</option>
+              <option value="الصف الخامس الابتدائي">الصف الخامس الابتدائي</option>
+              <option value="الصف السادس الابتدائي">الصف السادس الابتدائي</option>
               <option value="الصف الأول الإعدادي">الصف الأول الإعدادي</option>
               <option value="الصف الثاني الإعدادي">الصف الثاني الإعدادي</option>
               <option value="الصف الثالث الإعدادي">الصف الثالث الإعدادي</option>
+              <option value="الصف الأول الثانوي">الصف الأول الثانوي</option>
+              <option value="الصف الثاني الثانوي">الصف الثاني الثانوي</option>
+              <option value="الصف الثالث الثانوي">الصف الثالث الثانوي</option>
             </select>
-            <input type="text" id="tskTitle" class="form-ctrl" placeholder="عنوان المهمة" required>
+            <input type="text" id="tskTitle" class="form-ctrl" placeholder="عنوان المهمة أو المشروع" required>
             <input type="url" id="tskUrl" class="form-ctrl" placeholder="رابط الامتحان أو تفاصيل الواجب" required>
             <input type="text" id="tskDeadline" class="form-ctrl" placeholder="آخر موعد للتسليم" required>
             <button type="submit" class="btn btn-main">نشر للطلاب 🚀</button>
@@ -308,16 +315,22 @@
               <option value="تعلم ذاتي">درس تعلم ذاتي وتأسيس</option>
               <option value="مذكرة">مذكرة أو ملزمة PDF</option>
             </select>
-            <select id="mGrade" class="form-ctrl">
-              <option value="الصف الأول الثانوي">الصف الأول الثانوي</option>
-              <option value="الصف الثاني الثانوي">الصف الثاني الثانوي</option>
-              <option value="الصف الثالث الثانوي">الصف الثالث الثانوي</option>
+            <select id="mGrade" class="form-ctrl" required>
+              <option value="الصف الأول الابتدائي">الصف الأول الابتدائي</option>
+              <option value="الصف الثاني الابتدائي">الصف الثاني الابتدائي</option>
+              <option value="الصف الثالث الابتدائي">الصف الثالث الابتدائي</option>
+              <option value="الصف الرابع الابتدائي">الصف الرابع الابتدائي</option>
+              <option value="الصف الخامس الابتدائي">الصف الخامس الابتدائي</option>
+              <option value="الصف السادس الابتدائي">الصف السادس الابتدائي</option>
               <option value="الصف الأول الإعدادي">الصف الأول الإعدادي</option>
               <option value="الصف الثاني الإعدادي">الصف الثاني الإعدادي</option>
               <option value="الصف الثالث الإعدادي">الصف الثالث الإعدادي</option>
+              <option value="الصف الأول الثانوي">الصف الأول الثانوي</option>
+              <option value="الصف الثاني الثانوي">الصف الثاني الثانوي</option>
+              <option value="الصف الثالث الثانوي">الصف الثالث الثانوي</option>
             </select>
             <input type="text" id="mTitle" class="form-ctrl" placeholder="العنوان" required>
-            <input type="url" id="mUrl" class="form-ctrl" placeholder="الرابط" required>
+            <input type="url" id="mUrl" class="form-ctrl" placeholder="الرابط المباشر" required>
             <input type="text" id="mDesc" class="form-ctrl" placeholder="الوصف" required>
             <button type="submit" class="btn btn-main">نشر 📥</button>
           </form>
@@ -352,7 +365,6 @@
 
     let allStudents = [];
 
-    // تسجيل الدخول الخاص بمستر سعيد
     document.getElementById('lockForm').onsubmit = (e) => {
       e.preventDefault();
       const u = document.getElementById('adminUser').value.trim();
@@ -564,7 +576,7 @@
         deadline: document.getElementById('tskDeadline').value.trim(),
         timestamp: Date.now()
       });
-      alert('تم نشر المهمة بنجاح!');
+      alert('تم نشر المهمة / المشروع بنجاح!');
       document.getElementById('createTaskForm').reset();
     };
 

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+	<meta charset="UTF-8">
+	<title>منصة المستر - الحصص</title>
+	<style>
+		* { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+		body { margin: 0; background: #0b1329; color: #fff; }
+		header { background: #1e293b; padding: 15px 30px; display: flex; justify-content: space-between; border-bottom: 2px solid #334155; }
+		.logo { font-size: 20px; font-weight: bold; color: #60a5fa; }
+		.container { max-width: 1100px; margin: 30px auto; padding: 0 20px; display: grid; grid-template-columns: 2fr 1fr; gap: 25px; }
+		.video-card { background: #1e293b; border-radius: 12px; padding: 20px; }
+		.video-wrapper { position: relative; width: 100%; background: #000; border-radius: 8px; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; }
+		.watermark { position: absolute; color: rgba(255,255,255,0.4); font-size: 14px; font-weight: bold; pointer-events: none; animation: floatMark 7s infinite alternate; z-index: 10; }
+		@keyframes floatMark { 0% { top: 15%; left: 15%; } 50% { top: 75%; left: 65%; } 100% { top: 35%; left: 25%; } }
+		.side-card { background: #1e293b; border-radius: 12px; padding: 20px; height: fit-content; }
+		h3 { margin-top: 0; color: #38bdf8; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+		.lesson-item { padding: 12px; background: #0f172a; border-radius: 8px; margin-bottom: 10px; cursor: pointer; border: 1px solid #334155; }
+		.lesson-item.active { border-color: #3b82f6; background: #1e3a8a; }
+	</style>
+</head>
+<body>
+	<header>
+		<div class="logo">منصة المستر 🎓 - مستر سعيد</div>
+		<div id="stData" style="color: #94a3b8;"></div>
+	</header>
+
+	<div class="container">
+		<div class="video-card">
+			<h2 id="videoTitle">عنوان المحاضرة</h2>
+			<div class="video-wrapper">
+				<video id="player" width="100%" height="100%" controls controlsList="nodownload">
+					<source id="videoSrc" src="" type="video/mp4">
+				</video>
+				<div class="watermark" id="watermark"></div>
+			</div>
+			<p id="videoDesc" style="margin-top: 15px; color: #cbd5e1; line-height: 1.6;"></p>
+		</div>
+
+		<div class="side-card">
+			<h3>المحاضرات المرفوعة لمرحلتك</h3>
+			<div id="lessonsMenu"></div>
+		</div>
+	</div>
+
+	<script>
+		const session = JSON.parse(localStorage.getItem('active_session') || '{}');
+		if (!session.name) {
+			alert('يجب تسجيل الدخول أولاً!');
+			window.location.href = 'index.html';
+		}
+
+		document.getElementById('stData').innerText = `الطالب: ${session.name} | ${session.grade}`;
+		document.getElementById('watermark').innerText = `${session.phone} - ${session.name}`;
+
+		const allLessons = JSON.parse(localStorage.getItem('platform_lessons') || '[]');
+		const gradeLessons = allLessons.filter(l => l.grade === session.grade);
+		const menu = document.getElementById('lessonsMenu');
+
+		if (gradeLessons.length === 0) {
+			document.getElementById('videoTitle').innerText = `مرحباً بك في (${session.grade})`;
+			document.getElementById('videoDesc').innerText = 'لم يقم مستر سعيد برفع فيديوهات لهذه المرحلة حتى الآن.';
+			menu.innerHTML = '<p style="color:#94a3b8; font-size:13px;">لا توجد حصص منشورة لمرحلتك بعد.</p>';
+		} else {
+			setVideo(gradeLessons[0]);
+			menu.innerHTML = gradeLessons.map((l, idx) => `
+				<div class="lesson-item ${idx === 0 ? 'active' : ''}" onclick="selectLesson(${idx})">
+					${l.title}
+				</div>
+			`).join('');
+		}
+
+		function selectLesson(idx) {
+			setVideo(gradeLessons[idx]);
+			document.querySelectorAll('.lesson-item').forEach((el, i) => {
+				el.className = 'lesson-item ' + (i === idx ? 'active' : '');
+			});
+		}
+
+		function setVideo(item) {
+			document.getElementById('videoTitle').innerText = item.title;
+			document.getElementById('videoDesc').innerText = item.desc;
+			const player = document.getElementById('player');
+			document.getElementById('videoSrc').src = item.url;
+			player.load();
+		}
+	</script>
+</body>
+</html>

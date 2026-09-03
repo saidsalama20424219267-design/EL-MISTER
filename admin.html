@@ -78,6 +78,7 @@
 </head>
 <body>
 
+  <!-- شاشة قفل الأدمن -->
   <div id="adminLockScreen">
     <div class="lock-card">
       <div style="font-size: 36px; color: var(--primary); margin-bottom: 10px;"><i class="fa-solid fa-graduation-cap"></i></div>
@@ -91,6 +92,7 @@
     </div>
   </div>
 
+  <!-- لوحة الأدمن الرئيسية -->
   <div id="adminApp">
     <header class="top-navbar">
       <div>
@@ -103,7 +105,7 @@
       </div>
     </header>
 
-    <!-- بطاقات الإحصائيات -->
+    <!-- الإحصائيات السريعة -->
     <div class="stats-row">
       <div class="stat-card">
         <div><div style="font-size:12px; color:var(--text-muted);">إجمالي الطلاب</div><div class="stat-num" id="stCountTotal">0</div></div>
@@ -123,7 +125,7 @@
       </div>
     </div>
 
-    <!-- التبويبات -->
+    <!-- أزرار التبويبات -->
     <div class="tabs-nav">
       <button class="tab-btn active" onclick="switchTab('tabStudents', this)"><i class="fa-solid fa-users"></i> الطلاب والاشتراكات</button>
       <button class="tab-btn" onclick="switchTab('tabCommunity', this)"><i class="fa-solid fa-comments"></i> شات المجتمع المباشر</button>
@@ -171,7 +173,7 @@
       </div>
     </div>
 
-    <!-- 2. مجتمع الطلاب -->
+    <!-- 2. شات المجتمع -->
     <div id="tabCommunity" class="tab-content">
       <div class="panel-card">
         <div class="panel-header">
@@ -192,11 +194,9 @@
             <option value="الصف الأول الابتدائي">الصف الأول الابتدائي</option>
           </select>
         </div>
-        
         <div id="adminChatStream" style="height:380px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; padding:15px; margin-bottom:15px; background:#f8fafc;">
           <p style="color:#64748b;">جاري تحميل الرسائل...</p>
         </div>
-        
         <div style="display:flex; gap:10px;">
           <input type="text" id="adminReplyText" class="form-ctrl" style="margin:0;" placeholder="اكتب رداً رسمياً بصفتك (مستر سعيد)...">
           <button class="btn btn-main" style="width:130px;" onclick="sendAdminChatMessage()">إرسال رد 🎓</button>
@@ -226,7 +226,7 @@
               <option value="الصف الثاني الابتدائي">الصف الثاني الابتدائي</option>
               <option value="الصف الأول الابتدائي">الصف الأول الابتدائي</option>
             </select>
-            <input type="text" id="hnScore" class="form-ctrl" placeholder="الدرجة أو الإنجاز (مثال: 100/100 امتحان Unit 1)" required>
+            <input type="text" id="hnScore" class="form-ctrl" placeholder="الدرجة أو الإنجاز" required>
             <input type="text" id="hnRank" class="form-ctrl" placeholder="الترتيب (مثال: المركز الأول 🥇)" required>
             <button type="submit" class="btn btn-main" style="background:#eab308;">تثبيت في لوحة الشرف 🏆</button>
           </form>
@@ -259,7 +259,7 @@
       </div>
     </div>
 
-    <!-- 5. الاختبارات والمشاريع -->
+    <!-- 5. الاختبارات والواجبات -->
     <div id="tabExamsProj" class="tab-content">
       <div style="display:grid; grid-template-columns: 360px 1fr; gap:20px;">
         <div class="panel-card">
@@ -283,7 +283,6 @@
             <button type="submit" class="btn btn-main">نشر للطلاب 🚀</button>
           </form>
         </div>
-
         <div class="panel-card">
           <div class="panel-header"><div class="panel-title">تسليمات حلول الطلاب</div></div>
           <div style="overflow-x:auto;">
@@ -318,7 +317,7 @@
               <option value="الصف الثالث الإعدادي">الصف الثالث الإعدادي</option>
             </select>
             <input type="text" id="mTitle" class="form-ctrl" placeholder="العنوان" required>
-            <input type="file" id="mFile" class="form-ctrl" style="height: auto; padding: 10px;" accept="image/*,application/pdf" required>
+            <input type="url" id="mUrl" class="form-ctrl" placeholder="الرابط" required>
             <input type="text" id="mDesc" class="form-ctrl" placeholder="الوصف" required>
             <button type="submit" class="btn btn-main">نشر 📥</button>
           </form>
@@ -337,7 +336,6 @@
         <div id="pollResultsBox">جاري التحميل...</div>
       </div>
     </div>
-
   </div>
 
   <script>
@@ -354,7 +352,7 @@
 
     let allStudents = [];
 
-    // التحقق من بيانات دخول الأدمن المحدثة
+    // تسجيل الدخول الخاص بمستر سعيد
     document.getElementById('lockForm').onsubmit = (e) => {
       e.preventDefault();
       const u = document.getElementById('adminUser').value.trim();
@@ -427,7 +425,6 @@
       `).join('');
     }
 
-    // دالة حذف طالب محدد
     async function deleteStudent(id) {
       if (confirm('هل أنت متأكد من حذف هذا الطالب نهائياً من المنصة؟')) {
         try {
@@ -439,7 +436,6 @@
       }
     }
 
-    // دالة مسح كل الطلاب دفعة واحدة
     async function deleteAllStudents() {
       const confirmWord = prompt('تحذير شديد: سيتم مسح جميع الطلاب المسجلين بالكامل!\nاكتب كلمة (تأكيد) للمتابعة:');
       if (confirmWord === 'تأكيد') {
@@ -538,7 +534,7 @@
         rank: document.getElementById('hnRank').value.trim(),
         timestamp: Date.now()
       });
-      alert('تمت إضافة الطالب للوحة الشرف وستظهر فوراً لجميع الطلاب!');
+      alert('تمت إضافة الطالب للوحة الشرف!');
       document.getElementById('addHonorForm').reset();
     };
 
@@ -579,9 +575,9 @@
           return `
             <tr>
               <td><b>${s.studentName}</b><br><small>${s.grade}</small></td>
+              <td>${s.title}</td>
+              <td><a href="${s.fileUrl||s.url}" target="_blank" class="btn btn-main" style="padding:4px 8px; height:30px;">معاينة الحل 🔗</a></td>
               <td>
-  <button class="btn btn-main" style="padding:4px 8px; height:30px;" onclick="viewSubmission('${s.fileUrl}')">معاينة الحل 👁️</button>
-</td>
                 <select class="form-ctrl" style="height:32px; margin:0;" onchange="db.collection('submissions').doc('${doc.id}').update({status:this.value})">
                   <option value="قيد المراجعة ⏳" ${s.status?.includes('المراجعة')?'selected':''}>قيد المراجعة</option>
                   <option value="ممتاز 10/10 ⭐" ${s.status?.includes('ممتاز')?'selected':''}>ممتاز 10/10 ⭐</option>
@@ -595,44 +591,19 @@
     }
 
     document.getElementById('addMediaForm').onsubmit = async (e) => {
-  e.preventDefault();
-  const file = document.getElementById('mFile').files[0];
-  if (!file) { alert('اختر ملفاً أولاً!'); return; }
+      e.preventDefault();
+      await db.collection('media').add({
+        category: document.getElementById('mCategory').value,
+        grade: document.getElementById('mGrade').value,
+        title: document.getElementById('mTitle').value.trim(),
+        url: document.getElementById('mUrl').value.trim(),
+        desc: document.getElementById('mDesc').value.trim(),
+        timestamp: Date.now()
+      });
+      alert('تم النشر بنجاح!');
+      document.getElementById('addMediaForm').reset();
+    };
 
-  const submitBtn = e.target.querySelector('button[type="submit"]');
-  submitBtn.disabled = true;
-  submitBtn.innerText = 'جاري رفع الملف... ⏳';
-
-  try {
-    const formData = new FormData();
-    formData.append('image', file);
-
-    const res = await fetch('https://api.imgbb.com/1/upload?key=c9b0e11ba2ea8148b8830739c9df4dbd', {
-      method: 'POST',
-      body: formData
-    });
-    const data = await res.json();
-
-    if (!data.success) throw new Error('فشل الرفع');
-
-    await db.collection('media').add({
-      category: document.getElementById('mCategory').value,
-      grade: document.getElementById('mGrade').value,
-      title: document.getElementById('mTitle').value.trim(),
-      url: data.data.url,
-      desc: document.getElementById('mDesc').value.trim(),
-      timestamp: Date.now()
-    });
-
-    alert('تم رفع الملف ونشره بنجاح! 📥');
-    document.getElementById('addMediaForm').reset();
-  } catch (err) {
-    alert('حدث خطأ أثناء الرفع: ' + err.message);
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.innerText = 'نشر 📥';
-  }
-};
     function listenMedia() {
       db.collection('media').onSnapshot(snap => {
         document.getElementById('adminMediaList').innerHTML = snap.docs.map(doc => {
@@ -666,6 +637,6 @@
         `;
       });
     }
- </script>
+  </script>
 </body>
 </html>

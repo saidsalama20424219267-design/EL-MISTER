@@ -225,7 +225,30 @@
       </main>
     </div>
   </div>
+<!-- زر شات الذكاء الاصطناعي لمستر سعيد -->
+  <div id="aiFloatingBtn" onclick="toggleAiChat()" style="position:fixed; bottom:25px; left:25px; width:60px; height:60px; border-radius:50%; background:#104382; color:#fff; display:flex; align-items:center; justify-content:center; font-size:26px; cursor:pointer; box-shadow:0 6px 20px rgba(16,67,130,0.4); z-index:10000;">
+    <i class="fa-solid fa-robot"></i>
+  </div>
 
+  <!-- نافذة محادثة المساعد الذكي -->
+  <div id="aiChatBox" style="display:none; position:fixed; bottom:95px; left:25px; width:350px; max-width:90vw; height:480px; background:#fff; border-radius:14px; border:1px solid #e2e8f0; box-shadow:0 10px 30px rgba(0,0,0,0.2); z-index:10001; flex-direction:column; overflow:hidden;">
+    <div style="background:#104382; color:#fff; padding:14px; display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <i class="fa-solid fa-graduation-cap"></i>
+        <b>مساعد مستر سعيد الذكي 🤖</b>
+      </div>
+      <span onclick="toggleAiChat()" style="cursor:pointer; font-size:18px; font-weight:bold;">✖</span>
+    </div>
+    <div id="aiMessagesArea" style="flex:1; padding:14px; overflow-y:auto; background:#f8fafc; font-size:13px; display:flex; flex-direction:column; gap:10px;">
+      <div style="background:#e2e8f0; padding:10px 12px; border-radius:10px; align-self:flex-start; max-width:85%;">
+        أهلاً بك يا بطل! أنا المساعد الذكي لمستر سعيد. اسألني أي سؤال في الإنجليزي وهشرحهولك فوراً 🎓
+      </div>
+    </div>
+    <div style="padding:10px; border-top:1px solid #e2e8f0; display:flex; gap:6px; background:#fff;">
+      <input type="text" id="aiInputText" class="form-input" style="margin:0; height:38px; font-size:13px;" placeholder="اسألني عن قاعدة أو معنى كلمة..." onkeydown="if(event.key==='Enter') sendToAi()">
+      <button class="btn-action" style="width:75px; height:38px;" onclick="sendToAi()">إرسال</button>
+    </div>
+  </div>
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyBQDpzEy7llbyiF6OdvG8PsuVvjJu4PWtk",
@@ -426,6 +449,64 @@
         timestamp: Date.now()
       });
       document.getElementById('stChatText').value = '';
+    }
+  // --- كود تشغيل شات الذكاء الاصطناعي لمستر سعيد ---
+    const GEMINI_KEY = "AQ.Ab8RN6KygErtuCC_rPofzj9hpPoVrWbXpHPcgMD_Ayy9HyfiSA";
+
+    function toggleAiChat() {
+      const box = document.getElementById('aiChatBox');
+      if (!box) return;
+      box.style.display = (box.style.display === 'flex') ? 'none' : 'flex';
+      if (box.style.display === 'flex') {
+        document.getElementById('aiInputText').focus();
+      }
+    }
+
+    async function sendToAi() {
+      const input = document.getElementById('aiInputText');
+      const query = input.value.trim();
+      if (!query) return;
+
+      const msgs = document.getElementById('aiMessagesArea');
+      msgs.innerHTML += `<div style="background:#104382; color:#fff; padding:10px 12px; border-radius:10px; align-self:flex-end; max-width:85%;">${query}</div>`;
+      input.value = '';
+      msgs.scrollTop = msgs.scrollHeight;
+
+      const loadingId = 'load_' + Date.now();
+      msgs.innerHTML += `<div id="${loadingId}" style="background:#e2e8f0; color:#64748b; padding:8px 12px; border-radius:10px; align-self:flex-start;">المستر الذكي بيفكر... ⏳</div>`;
+      msgs.scrollTop = msgs.scrollHeight;
+
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_KEY}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [{ text: `أنت المساعد الذكي والمعلم الخاص بمنصة مستر سعيد التعليمية في مصر. اشرح للطالب الآتي بأسلوب سهل وبسيط ومحفز مع أمثلة: ${query}` }]
+              }
+            ]
+          })
+        });
+
+        const data = await res.json();
+        const loader = document.getElementById(loadingId);
+        if (loader) loader.remove();
+
+        if (data.error) {
+          msgs.innerHTML += `<div style="background:#fee2e2; color:#dc2626; padding:8px 12px; border-radius:10px; align-self:flex-start;">تنبيه: ${data.error.message}</div>`;
+          return;
+        }
+
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "عفواً يا بطل، حاول تسألني تاني!";
+        msgs.innerHTML += `<div style="background:#e2e8f0; color:#0f172a; padding:10px 12px; border-radius:10px; align-self:flex-start; max-width:85%; line-height:1.6;">${reply.replace(/\n/g, '<br>')}</div>`;
+        msgs.scrollTop = msgs.scrollHeight;
+
+      } catch (err) {
+        const loader = document.getElementById(loadingId);
+        if (loader) loader.remove();
+        msgs.innerHTML += `<div style="background:#fee2e2; color:#dc2626; padding:8px 12px; border-radius:10px; align-self:flex-start;">تأكد من الاتصال بالإنترنت ومفتاح الـ API!</div>`;
+      }
     }
   </script>
 </body>

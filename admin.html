@@ -350,7 +350,30 @@
       </div>
     </div>
   </div>
+<!-- زر شات الذكاء الاصطناعي للأدمن -->
+  <div id="aiAdminFloatingBtn" onclick="toggleAdminAiChat()" style="position:fixed; bottom:25px; left:25px; width:60px; height:60px; border-radius:50%; background:#104382; color:#fff; display:flex; align-items:center; justify-content:center; font-size:26px; cursor:pointer; box-shadow:0 6px 20px rgba(16,67,130,0.4); z-index:10000;">
+    <i class="fa-solid fa-robot"></i>
+  </div>
 
+  <!-- نافذة محادثة مساعد المستر الشخصي -->
+  <div id="aiAdminChatBox" style="display:none; position:fixed; bottom:95px; left:25px; width:360px; max-width:90vw; height:500px; background:#fff; border-radius:14px; border:1px solid #e2e8f0; box-shadow:0 10px 30px rgba(0,0,0,0.2); z-index:10001; flex-direction:column; overflow:hidden;">
+    <div style="background:#104382; color:#fff; padding:14px; display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+        <b>مساعد المستر الشخصي 🤖</b>
+      </div>
+      <span onclick="toggleAdminAiChat()" style="cursor:pointer; font-size:18px; font-weight:bold;">✖</span>
+    </div>
+    <div id="aiAdminMessagesArea" style="flex:1; padding:14px; overflow-y:auto; background:#f8fafc; font-size:13px; display:flex; flex-direction:column; gap:10px;">
+      <div style="background:#e2e8f0; padding:10px 12px; border-radius:10px; align-self:flex-start; max-width:85%;">
+        أهلاً يا مستر! أنا مساعدك الشخصي. اطلب مني أعملك امتحانات، أسئلة Choose، أو تلخيص أي جرامر في ثواني 🎓
+      </div>
+    </div>
+    <div style="padding:10px; border-top:1px solid #e2e8f0; display:flex; gap:6px; background:#fff;">
+      <input type="text" id="aiAdminInputText" class="form-input" style="margin:0; height:38px; font-size:13px;" placeholder="مثال: اكتب 5 أسئلة اختيار من متعدد على Past Simple..." onkeydown="if(event.key==='Enter') sendToAdminAi()">
+      <button class="btn-action" style="width:75px; height:38px;" onclick="sendToAdminAi()">إرسال</button>
+    </div>
+  </div>
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyBQDpzEy7llbyiF6OdvG8PsuVvjJu4PWtk",
@@ -649,6 +672,64 @@
         `;
       });
     }
-  </script>
+ // --- تشغيل المساعد الذكي في لوحة الأدمن ---
+    const GEMINI_ADMIN_KEY = "AQ.Ab8RN6KygErtuCC_rPofzj9hpPoVrWbXpHPcgMD_Ayy9HyfiSA";
+
+    function toggleAdminAiChat() {
+      const box = document.getElementById('aiAdminChatBox');
+      if (!box) return;
+      box.style.display = (box.style.display === 'flex') ? 'none' : 'flex';
+      if (box.style.display === 'flex') {
+        document.getElementById('aiAdminInputText').focus();
+      }
+    }
+
+    async function sendToAdminAi() {
+      const input = document.getElementById('aiAdminInputText');
+      const query = input.value.trim();
+      if (!query) return;
+
+      const msgs = document.getElementById('aiAdminMessagesArea');
+      msgs.innerHTML += `<div style="background:#104382; color:#fff; padding:10px 12px; border-radius:10px; align-self:flex-end; max-width:85%;">${query}</div>`;
+      input.value = '';
+      msgs.scrollTop = msgs.scrollHeight;
+
+      const loadingId = 'load_adm_' + Date.now();
+      msgs.innerHTML += `<div id="${loadingId}" style="background:#e2e8f0; color:#64748b; padding:8px 12px; border-radius:10px; align-self:flex-start;">جاري التجهيز... ⏳</div>`;
+      msgs.scrollTop = msgs.scrollHeight;
+
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_ADMIN_KEY}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [{ text: `أنت المساعد الشخصي لمعلم اللغة الإنجليزية مستر سعيد. ساعده في إعداد المحتوى، توليد الامتحانات، صياغة أسئلة الاختيار من متعدد، وكتابة الواجبات والشروحات بدقة واحترافية: ${query}` }]
+              }
+            ]
+          })
+        });
+
+        const data = await res.json();
+        const loader = document.getElementById(loadingId);
+        if (loader) loader.remove();
+
+        if (data.error) {
+          msgs.innerHTML += `<div style="background:#fee2e2; color:#dc2626; padding:8px 12px; border-radius:10px; align-self:flex-start;">تنبيه: ${data.error.message}</div>`;
+          return;
+        }
+
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "عفواً، حاول مرة أخرى!";
+        msgs.innerHTML += `<div style="background:#e2e8f0; color:#0f172a; padding:10px 12px; border-radius:10px; align-self:flex-start; max-width:85%; line-height:1.6;">${reply.replace(/\n/g, '<br>')}</div>`;
+        msgs.scrollTop = msgs.scrollHeight;
+
+      } catch (err) {
+        const loader = document.getElementById(loadingId);
+        if (loader) loader.remove();
+        msgs.innerHTML += `<div style="background:#fee2e2; color:#dc2626; padding:8px 12px; border-radius:10px; align-self:flex-start;">تأكد من الاتصال بالإنترنت ومفتاح الـ API!</div>`;
+      }
+    }
+ </script>
 </body>
 </html>

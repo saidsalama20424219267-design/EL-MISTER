@@ -673,8 +673,7 @@
       });
     }
  // --- تشغيل المساعد الذكي في لوحة الأدمن ---
-    const GEMINI_ADMIN_KEY = "AQ.Ab8RN6KygErtuCC_rPofzj9hpPoVrWbXpHPcgMD_Ayy9HyfiSA";
-
+const GEMINI_ADMIN_KEY = "AQ.Ab8RN6KdS-HppJVtydUdYkia_V8N3NgM40oTt1BirjFvCFszFg";
     function toggleAdminAiChat() {
       const box = document.getElementById('aiAdminChatBox');
       if (!box) return;
@@ -725,9 +724,10 @@
         msgs.scrollTop = msgs.scrollHeight;
 
       } catch (err) {
+        console.error("خطأ الاتصال:", err);
         const loader = document.getElementById(loadingId);
         if (loader) loader.remove();
-        msgs.innerHTML += `<div style="background:#fee2e2; color:#dc2626; padding:8px 12px; border-radius:10px; align-self:flex-start;">تأكد من الاتصال بالإنترنت ومفتاح الـ API!</div>`;
+        msgs.innerHTML += `<div style="background:#fee2e2; color:#dc2626; padding:8px 12px; border-radius:10px; align-self:flex-start;">الخطأ: ${err.message}</div>`;
       }
     }
  </script>
